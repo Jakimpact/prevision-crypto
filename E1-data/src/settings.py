@@ -22,7 +22,9 @@ except FileNotFoundError as e:
 
 
 class ExtractSettings():
-    pass
+    JSON_PATH = EXTRACT_CONFIG["cryptodownload"]["save_dir"]
+    JSON_URLS = EXTRACT_CONFIG["cryptodownload"]["json_urls"]
+
 
 class DatabaseSettings():
     DB_PATH = DATABASE_CONFIG["db_path"]

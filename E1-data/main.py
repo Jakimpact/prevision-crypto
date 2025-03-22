@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 sys.path.append(str(ROOT_DIR))
 
-from src.C1_extraction.extract_cryptodownload import extract_json
+from src.C1_extraction.extract_cryptodownload import extract_all_json
 from src.C4_database.database import init_db
 
 
@@ -43,7 +43,6 @@ def main():
                                 ])
     
     # Suivi des variables du pipeline
-    raw_data = None
     db = None
 
     # Création / initialisation de la bdd
@@ -55,7 +54,7 @@ def main():
     if args.extract or run_all:
         logger.info("Exécute les étapes d'extraction")
         # Si la base de données n'existe pas, la crée
-        extract_json()
+        extract_all_json()
     
 
     logger.info("Composants du pipeline sélectionnés terminés")

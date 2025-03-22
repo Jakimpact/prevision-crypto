@@ -1,5 +1,5 @@
 cryptodownload:
-  save_dir: E1-data/external
+  save_dir: "data/external/"
   json_urls:
     binance: "https://api.cryptodatadownload.com/v1/data/ohlc/binance/guest/spot/available?_=1740047643800&format=json"
     gemini: "https://api.cryptodatadownload.com/v1/data/ohlc/gemini/guest/available?_=1740057730875&format=json"
