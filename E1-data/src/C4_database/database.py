@@ -10,7 +10,7 @@ def init_db(db_path=DatabaseSettings.DB_PATH, db_filename=DatabaseSettings.DB_FI
     """Initialise la base de données"""
 
     os.makedirs(db_path, exist_ok=True)
-    engine = create_engine(f'sqlite:///{db_filename}')
+    engine = create_engine(f'sqlite:///{db_path}/{db_filename}')
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     
