@@ -1,9 +1,14 @@
+import logging
 import os
 from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
 
+
+# Configure la journalisation
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(filename)s - %(message)s')
+logger = logging.getLogger("E1-data")
 
 BASE_DIR = Path(__file__).parent.parent
 load_dotenv(dotenv_path=os.path.join(BASE_DIR, "config/.env"))

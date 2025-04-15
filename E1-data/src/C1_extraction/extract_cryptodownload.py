@@ -21,8 +21,8 @@ def extract_json(url, exchange, save_dir=ExtractSettings.JSON_PATH_CD):
         json.dump(json_data, file, indent=4)
 
 
-def extract_jsons(json_urls=ExtractSettings.JSON_URLS):
-    """Lance l'extraction de tout les fichiers json"""
+def extract_all_json(json_urls=ExtractSettings.JSON_URLS):
+    """Lance l'extraction de tout les fichiers json nécéssaires depuis CryptoDownload et les sauvegarde en json"""
 
     for item in json_urls:
         extract_json(url=json_urls[item], exchange=item)

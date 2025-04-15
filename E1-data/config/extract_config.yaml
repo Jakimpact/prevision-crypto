@@ -8,6 +8,6 @@ cryptodownload:
     bitstamp: "https://api.cryptodatadownload.com/v1/data/ohlc/bitstamp/guest/spot/available?_=1740058272110&format=json"
 coinmarketcap:
   maps:
-    cryptocurrency: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map"
-    fiat:  "https://pro-api.coinmarketcap.com/v1/fiat/map"
-    exchange: "https://pro-api.coinmarketcap.com/v1/exchange/map" 
+    cryptocurrency_map: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map"
+    fiat_map:  "https://pro-api.coinmarketcap.com/v1/fiat/map"
+    exchange_map: "https://pro-api.coinmarketcap.com/v1/exchange/map" 
