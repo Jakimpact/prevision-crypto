@@ -32,7 +32,8 @@ class TradingPair(Base):
 
     base_currency = relationship("Currency", foreign_keys=[base_currency_id], back_populates="base_pairs")
     quote_currency = relationship("Currency", foreign_keys=[quote_currency_id], back_populates="quote_pairs")
-    csv_files = relationship("CryptocurrencyCSV", back_populates="trading_pair")
+    csv_files = relationship("CryptocurrencyCSV", foreign_keys="CryptocurrencyCSV.trading_pair_id", back_populates="trading_pair")
+    ohlcv_data = relationship("OHLCV", foreign_keys="OHLCV.trading_pair_id", back_populates="trading_pair")
 
     def __repr__(self):
         return f"<TradingPair(base='{self.base_currency.symbol}', quote='{self.quote_currency.symbol}')>"
@@ -44,7 +45,7 @@ class Exchange(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
 
-    csv_files = relationship("CryptocurrencyCSV", back_populates="exchange")
+    csv_files = relationship("CryptocurrencyCSV", foreign_keys="CryptocurrencyCSV.exchange_id", back_populates="exchange")
 
     def __repr__(self):
         return f"<Exchange(name='{self.name}')>"
@@ -61,10 +62,52 @@ class CryptocurrencyCSV(Base):
     end_date = Column(DateTime, nullable=False)
     file_url = Column(String, nullable=False)
 
-    exchange = relationship("Exchange", back_populates="csv_files")
-    trading_pair = relationship("TradingPair", back_populates="csv_files")
+    exchange = relationship("Exchange", foreign_keys=[exchange_id], back_populates="csv_files")
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="csv_files")
+    historical_data = relationship("CSVHistoricalData", foreign_keys="CSVHistoricalData.csv_file_id", back_populates="csv_file")
 
     def __repr__(self):
         return (f"<CryptocurrencyCSV(exchange='{self.exchange.name}', "
                 f"pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
                 f"timeframe='{self.timeframe}')>")
+    
+
+class CSVHistoricalData(Base):
+    __tablename__ = "csv_historical_data"
+
+    id = Column(Integer, primary_key=True)
+    csv_file_id = Column(Integer, ForeignKey("cryptocurrency_CSVs.id"), nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+    open = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    volume = Column(Float, nullable=False)
+
+    csv_file = relationship("CryptocurrencyCSV", foreign_keys=[csv_file_id], back_populates="csv_historical_data")
+
+    def __repr__(self):
+        return (f"<CSVHistoricalData(csv_file='{self.csv_file.file_url}', "
+                f"timestamp='{self.timestamp}', "
+                f"open='{self.open}', high='{self.high}', "
+                f"low='{self.low}', close='{self.close}')>")
+
+
+class OHLCV(Base):
+    __tablename__ = "ohlcv"
+
+    id = Column(Integer, primary_key=True)
+    trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+    open = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    volume = Column(Float, nullable=False)
+
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_data")
+
+    def __repr__(self):
+        return (f"<OHLCV(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+                f"timestamp='{self.timestamp}', open='{self.open}', high='{self.high}',"
+                f"low='{self.low}', close='{self.close}', volume='{self.volume})>")
