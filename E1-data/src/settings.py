@@ -1,9 +1,12 @@
+import os
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).parent.parent
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, "config/.env"))
 
 
 def load_yaml_config(filename):
@@ -21,11 +24,17 @@ except FileNotFoundError as e:
     print(f"Warning: {e}")
 
 
-class ExtractSettings():
-    JSON_PATH = EXTRACT_CONFIG["cryptodownload"]["save_dir"]
-    JSON_URLS = EXTRACT_CONFIG["cryptodownload"]["json_urls"]
-
-
 class DatabaseSettings():
     DB_PATH = DATABASE_CONFIG["db_path"]
     DB_FILENAME = DATABASE_CONFIG["db_filename"]
+
+
+class ExtractSettings():
+    JSON_PATH_CD = EXTRACT_CONFIG["save_dir"]["cryptodownload"]
+    JSON_PATH_CMC = EXTRACT_CONFIG["save_dir"]["coinmarketcap"]
+    JSON_URLS = EXTRACT_CONFIG["cryptodownload"]["json_urls"]
+    CMC_MAPS = EXTRACT_CONFIG["coinmarketcap"]["maps"]
+
+
+class SecretSettings():
+    CMC_API_KEY = os.getenv("CMC_API_KEY")

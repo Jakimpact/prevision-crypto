@@ -6,7 +6,8 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 sys.path.append(str(ROOT_DIR))
 
-from src.C1_extraction.extract_cryptodownload import extract_all_json
+from src.C1_extraction.extract_cryptodownload import extract_jsons
+from src.C1_extraction.extract_coinmarketcap import extract_maps
 from src.C4_database.database import init_db
 
 
@@ -22,9 +23,8 @@ def parse_args():
     
     parser.add_argument("--create_db", action="store_true", help="Crée la base de données et le schéma des tables")
     parser.add_argument("--extract", action="store_true", help="Exécute les étapes d'extraction")
-    parser.add_argument("--clean", action="store_true", help="Exécute les étapes de nettoyage")
     parser.add_argument("--aggregate", action="store_true", help="Exécute les étapes d'agrégation")
-    parser.add_argument("--scrape", action="store_true", help="Exécute les étapes de scraping")
+    parser.add_argument("--clean", action="store_true", help="Exécute les étapes de nettoyage")
     parser.add_argument("--all", action="store_true", help="Exécute le pipeline complet")
     
     return parser.parse_args()
@@ -46,15 +46,15 @@ def main():
     db = None
 
     # Création / initialisation de la bdd
-    if args.create_db or run_all:
-        logger.info("Exécute les étapes de création de la base de données")
+    if any([args.create_db, args.extract, args.clean, args.aggregate]) or run_all:
+        logger.info("Exécute les étapes de création / initialisation de la base de données")
         engine, Session = init_db()
     
-    # Extraction
+    # Extraction des données
     if args.extract or run_all:
         logger.info("Exécute les étapes d'extraction")
-        # Si la base de données n'existe pas, la crée
-        extract_all_json()
+        extract_maps()
+        extract_jsons()
     
 
     logger.info("Composants du pipeline sélectionnés terminés")
