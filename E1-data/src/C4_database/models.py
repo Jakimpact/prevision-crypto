@@ -1,6 +1,7 @@
 from sqlalchemy import Column, DateTime, Enum, Integer, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from datetime import datetime, timezone
 
 
 Base = declarative_base()
@@ -14,13 +15,15 @@ class Currency(Base):
     symbol = Column(String, nullable=False)
     slug = Column(String, nullable=True)
     sign = Column(String, nullable=True)
+    rank = Column(Integer, nullable=True)
+    rank_date = Column(DateTime, nullable=True, default=datetime.now(timezone.utc))
     type = Column(Enum(enums=["crypto", "fiat"], ordered=False), nullable=False)
 
     base_pairs = relationship("TradingPair", foreign_keys="TradingPair.base_currency_id", back_populates="base_currency")
     quote_pairs = relationship("TradingPair", foreign_keys="TradingPair.quote_currency_id", back_populates="quote_currency")
 
     __table_args__ = (
-        UniqueConstraint("name", "symbol", "type", name="uniq_currency_name_symbol_type")
+        UniqueConstraint("name", "symbol", "rank", "type", name="uniq_currency_name_symbol_rank_type"),
     )
 
     def __repr__(self):
@@ -40,7 +43,7 @@ class TradingPair(Base):
     ohlcv_data = relationship("OHLCV", foreign_keys="OHLCV.trading_pair_id", back_populates="trading_pair")
 
     __table_args__ = (
-        UniqueConstraint("base_currency_id", "quote_currency_id", name="uniq_trading_pair")
+        UniqueConstraint("base_currency_id", "quote_currency_id", name="uniq_trading_pair"),
     )
 
     def __repr__(self):
@@ -51,9 +54,14 @@ class Exchange(Base):
     __tablename__ = "exchanges"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    slug = Column(String, nullable=False)
 
     csv_files = relationship("CryptocurrencyCSV", foreign_keys="CryptocurrencyCSV.exchange_id", back_populates="exchange")
+
+    __table_args__ = (
+        UniqueConstraint("name", "slug", name="uniq_exchange_name_slug"),
+    )
 
     def __repr__(self):
         return f"<Exchange(name='{self.name}')>"
@@ -75,7 +83,7 @@ class CryptocurrencyCSV(Base):
     historical_data = relationship("CSVHistoricalData", foreign_keys="CSVHistoricalData.csv_file_id", back_populates="csv_file")
 
     __table_args__ = (
-        UniqueConstraint("exchange_id", "trading_pair_id", "timeframe", name="uniq_csv_exchange_trading_pair_timeframe")
+        UniqueConstraint("exchange_id", "trading_pair_id", "timeframe", name="uniq_csv_exchange_trading_pair_timeframe"),
     )
 
     def __repr__(self):
@@ -99,7 +107,7 @@ class CSVHistoricalData(Base):
     csv_file = relationship("CryptocurrencyCSV", foreign_keys=[csv_file_id], back_populates="historical_data")
 
     __table_args__ = (
-        UniqueConstraint("csv_file_id", "timestamp", name="uniq_historical_data_csv_file_timestamp")
+        UniqueConstraint("csv_file_id", "timestamp", name="uniq_historical_data_csv_file_timestamp"),
     )
 
     def __repr__(self):
@@ -124,7 +132,7 @@ class OHLCV(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "timestamp", name="uniq_ohlcv_trading_pair_timestamp")
+        UniqueConstraint("trading_pair_id", "timestamp", name="uniq_ohlcv_trading_pair_timestamp"),
     )
 
     def __repr__(self):

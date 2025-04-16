@@ -43,3 +43,7 @@ class ExtractSettings():
 
 class SecretSettings():
     CMC_API_KEY = os.getenv("CMC_API_KEY")
+
+
+class LogSettings():
+    LOG_PATH = os.path.join(BASE_DIR, "data/logs")
