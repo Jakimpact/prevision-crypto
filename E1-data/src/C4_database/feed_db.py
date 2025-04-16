@@ -9,7 +9,7 @@ from src.C4_database.models import Currency, Exchange
 
 
 def process_currency_json(file, session, type):
-    """Récupère les données d'un json sur les monnaies (crypto ou fiat) et les mets en base de données"""
+    """Récupère les données d'un json sur les devises (crypto ou fiat) et les mets en base de données"""
     
     try:
         with open(file, "r") as f:
