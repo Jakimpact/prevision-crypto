@@ -1,11 +1,14 @@
 import json
 import os
 from pathlib import Path
+from datetime import datetime
 
 from sqlalchemy.exc import IntegrityError
 
 from src.settings import ExtractSettings, logger, LogSettings
-from src.C4_database.models import Currency, Exchange
+from src.C2_query.query_currencies import get_currency_by_symbol
+from src.C2_query.query_exchanges import get_exchange_by_name
+from src.C4_database.models import Currency, Exchange, TradingPair, CryptocurrencyCSV
 
 
 def process_currency_json(file, session, type):
@@ -96,3 +99,91 @@ def process_all_cmc_json(session):
             elif "exchange" in file.stem:
                 process_exchange_json(file, session)
 
+
+def process_cd_json(file, session, exchange):
+    """Récupère les données du json et mets en base de données les pairs de trading et les infos sur les csv"""
+
+    try:
+        with open(file, "r") as f:
+            json_data = json.load(f)
+
+        for data in json_data:
+            symbol = data["symbol"]
+            base = None
+            quote = None
+
+            # Gestion spécifique pour Binance
+            if exchange.name.lower() == "binance":
+                quote_currencies = ["USDT", "BTC", "ETH", "BNB", "USD", "EUR"]
+                for quote_curr in quote_currencies:
+                    if symbol.endswith(quote_curr):
+                        quote = quote_curr
+                        base = symbol[:-len(quote_curr)]
+                        break
+                if not base or not quote:
+                    logger.warning(f"Impossible de séparer la paire {symbol} pour Binance")
+                    continue
+            else:
+                try:
+                    base, quote = symbol.split('/')
+                except ValueError:
+                    continue
+
+            base_currency = get_currency_by_symbol(session, base)
+            quote_currency = get_currency_by_symbol(session, quote)
+
+            if not base_currency or not quote_currency:
+                continue
+            
+            # Ajout de la pair de trading dans la base de données
+            trading_pair = TradingPair(
+                base_currency_id=base_currency.id,
+                quote_currency_id=quote_currency.id
+            )
+            session.add(trading_pair)
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+                # Si la paire existe déjà, on la récupère
+                # TODO modif pour faire appel fonction dans dossier query
+                trading_pair = session.query(TradingPair).filter_by(
+                    base_currency_id=base_currency.id,
+                    quote_currency_id=quote_currency.id
+                ).first()
+
+            # Création de l'entrée CryptocurrencyCSV
+            csv_entry = CryptocurrencyCSV(
+                exchange_id=exchange.id,
+                trading_pair_id=trading_pair.id,
+                timeframe=data["timeframe"],
+                start_date=datetime.fromtimestamp(data["start_timestamp"]),
+                end_date=datetime.fromtimestamp(data["end_timestamp"]),
+                file_url=data["csv_file"]
+            )
+            session.add(csv_entry)
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+
+    except Exception as e:
+        logger.error(f"Erreur lors du traitement du fichier: {str(e)}")
+
+
+def process_all_cd_json(session):
+    """Récupère les données des json de CryptoDownload et les mets en base de données"""
+
+    files_dir = Path(ExtractSettings.JSON_PATH_CD)
+    
+    for file in files_dir.iterdir():
+        if file.suffix == ".json":
+            exchange_name = file.stem.split('_')[0].capitalize()
+            
+            exchange = get_exchange_by_name(session, exchange_name)
+            if not exchange:
+                logger.error(f"Exchange {exchange_name} non trouvé dans la base de données")
+                continue
+            
+            logger.info(f"Traitement du fichier {file.name} pour l'exchange {exchange_name}")
+            process_cd_json(file, session, exchange)
