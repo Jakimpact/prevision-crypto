@@ -1,0 +1,95 @@
+import json
+import os
+from pathlib import Path
+from datetime import datetime
+
+from sqlalchemy.exc import IntegrityError
+
+from src.C4_database.database import Database
+from src.settings import ExtractSettings, logger, LogSettings
+from src.C2_query.query_currencies import get_currency_by_symbol
+from src.C2_query.query_exchanges import get_exchange_by_name
+from src.C4_database.models import Currency, Exchange, TradingPair, CryptocurrencyCSV
+
+
+def process_all_cmc_json():
+    """Récupère les données des json de CoinMarketCap et les mets en base de données"""
+
+    files_dir = Path(ExtractSettings.JSON_PATH_CMC)
+
+    for file in files_dir.iterdir():
+        if file.suffix == ".json":
+            if "crypto" in file.stem or "fiat" in file.stem:
+                process_currency_json(file, type="crypto" if "crypto" in file.stem else "fiat")
+            elif "exchange" in file.stem:
+                process_exchange_json(file)
+
+
+def process_currency_json(file, type):
+    """Récupère les données d'un json sur les devises (crypto ou fiat) et les mets en base de données"""
+
+    try:
+        with Database() as db:
+            with open(file, "r") as f:
+                json_data = json.load(f)
+
+            success_count = 0
+            failed_entries = []
+
+            for data in json_data["data"]:
+                try:
+                    currency = db.currencies.create(
+                        name=data["name"],
+                        symbol=data["symbol"],
+                        slug=data["slug"] if type == "crypto" else None,
+                        sign=data["sign"] if type == "fiat" else None,
+                        rank=data["rank"] if type == "crypto" else None,
+                        type=type
+                    )
+                    success_count += 1
+                except IntegrityError:
+                    failed_entries.append(data)
+                    
+            logger.info(f"Insertion réussie de {success_count} {type} dans la base de données")
+
+            if failed_entries:
+                error_file = os.path.join(LogSettings.LOG_PATH, f"failed_{type}_insertion.json")
+                with open(error_file, "w") as f:
+                    json.dump([entry.__dict__ for entry in failed_entries], f, indent=4)
+                logger.info(f"{len(failed_entries)} {type} non insérées en raison de doublons ou d'erreurs. Détails dans {error_file}")
+
+    except Exception as e:
+        logger.error(f"Erreur pendant le traitement des données : {e}")
+
+
+def process_exchange_json(file):
+    """Récupère les données du json sur les plateformes d'échanges et les mets en base de données"""
+
+    try:
+        with Database() as db:
+            with open(file, "r") as f:
+                json_data = json.load(f)
+
+            success_count = 0
+            failed_entries = []
+
+            for data in json_data["data"]:
+                try:
+                    exchange = db.exchanges.create(
+                        name=data["name"],
+                        slug=data["slug"]
+                    )
+                    success_count += 1
+                except IntegrityError:
+                    failed_entries.append(data)
+                    
+            logger.info(f"Insertion réussie de {success_count} plateforme d'échanges dans la base de données")
+
+            if failed_entries:
+                error_file = os.path.join(LogSettings.LOG_PATH, f"failed_exchange_insertion.json")
+                with open(error_file, "w") as f:
+                    json.dump([entry.__dict__ for entry in failed_entries], f, indent=4)
+                logger.info(f"{len(failed_entries)} plateformes d'échanges non insérées en raison de doublons ou d'erreurs. Détails dans {error_file}")
+
+    except Exception as e:
+        logger.error(f"Erreur pendant le traitement des données : {e}")

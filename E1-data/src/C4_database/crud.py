@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.C4_database.models import (
@@ -19,9 +20,13 @@ class BaseCRUD:
     def create(self, **kwargs):
         obj = self.model(**kwargs)
         self.db.add(obj)
-        self.db.commit()
-        self.db.refresh(obj)
-        return obj
+        try:
+            self.db.commit()
+            self.db.refresh(obj)
+            return obj
+        except IntegrityError:
+            self.db.rollback()
+            raise
 
     def get(self, id: int):
         return self.db.query(self.model).get(id)
@@ -33,15 +38,23 @@ class BaseCRUD:
         obj = self.get(id)
         for key, value in kwargs.items():
             setattr(obj, key, value)
-        self.db.commit()
-        self.db.refresh(obj)
-        return obj
+        try:
+            self.db.commit()
+            self.db.refresh(obj)
+            return obj
+        except IntegrityError:
+            self.db.rollback()
+            raise
 
     def delete(self, id: int):
         obj = self.get(id)
-        self.db.delete(obj)
-        self.db.commit()
-        return obj
+        try:    
+            self.db.delete(obj)
+            self.db.commit()
+            return obj
+        except IntegrityError:
+            self.db.rollback()
+            raise
     
 
 class CurrencyCRUD(BaseCRUD):

@@ -7,7 +7,7 @@ sys.path.append(str(ROOT_DIR))
 
 from src.C1_extraction.extract_cryptodownload import extract_all_json
 from src.C1_extraction.extract_coinmarketcap import extract_maps
-from src.C4_database.feed_db import  process_all_cd_json, process_all_cmc_json
+from src.C4_database.feed_db.feed_coinmarketcap import  process_all_cmc_json
 from src.settings import logger
 
 
@@ -16,7 +16,6 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Exécute tous les composants du pipeline E1")
     
-    parser.add_argument("--create_db", action="store_true", help="Crée la base de données et le schéma des tables")
     parser.add_argument("--extract", action="store_true", help="Exécute les étapes d'extraction")
     parser.add_argument("--feed_db", action="store_true", help="Exécute les étapes d'alimentation brutes de la base de données")
     parser.add_argument("--aggregate", action="store_true", help="Exécute les étapes d'agrégation")
@@ -49,7 +48,6 @@ def main():
     if args.feed_db or run_all:
         logger.info("Exécute les étapes d'alimentation brutes de la base de données")
         process_all_cmc_json()
-        process_all_cd_json()
 
     logger.info("Composants du pipeline sélectionnés terminés")
 
