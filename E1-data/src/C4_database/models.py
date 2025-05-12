@@ -17,7 +17,7 @@ class Currency(Base):
     sign = Column(String, nullable=True)
     rank = Column(Integer, nullable=True)
     rank_date = Column(DateTime, nullable=True, default=datetime.now(timezone.utc))
-    type = Column(Enum(enums=["crypto", "fiat"], ordered=False), nullable=False)
+    type = Column(String, nullable=False)
 
     base_pairs = relationship("TradingPair", foreign_keys="TradingPair.base_currency_id", back_populates="base_currency")
     quote_pairs = relationship("TradingPair", foreign_keys="TradingPair.quote_currency_id", back_populates="quote_currency")

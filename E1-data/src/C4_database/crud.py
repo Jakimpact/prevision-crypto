@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -27,6 +29,33 @@ class BaseCRUD:
         except IntegrityError:
             self.db.rollback()
             raise
+
+    def create_many(self, items: List[Dict], bulk: bool=True):
+        """
+        Méthode pour insérer plusieurs objets dans la base de données.
+        Retourne le nombre d'objets insérés avec succès et une liste des objets qui n'ont pas pu être insérés
+        """
+        success = []
+        failed = []
+
+        # Essai de créer les objets avec un bulk 
+        if bulk:
+            try:
+                self.db.bulk_insert_mappings(self.model, items)
+                self.db.commit()
+                return len(items), []
+            except IntegrityError:
+                self.db.rollback()
+
+        # Si le bulk échoue, on les insère un par un
+        for data in items:
+            try:
+                self.create(**data)
+                success.append(data)
+            except IntegrityError:
+                failed.append(data)
+        
+        return len(success), failed
 
     def get(self, id: int):
         return self.db.query(self.model).get(id)

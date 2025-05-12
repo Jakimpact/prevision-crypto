@@ -33,23 +33,18 @@ def process_currency_json(file, type):
             with open(file, "r") as f:
                 json_data = json.load(f)
 
-            success_count = 0
-            failed_entries = []
-
+            items = []
             for data in json_data["data"]:
-                try:
-                    currency = db.currencies.create(
-                        name=data["name"],
-                        symbol=data["symbol"],
-                        slug=data["slug"] if type == "crypto" else None,
-                        sign=data["sign"] if type == "fiat" else None,
-                        rank=data["rank"] if type == "crypto" else None,
-                        type=type
-                    )
-                    success_count += 1
-                except IntegrityError:
-                    failed_entries.append(data)
-                    
+                items.append({
+                    "name": data["name"],
+                    "symbol": data["symbol"],
+                    "slug": data["slug"] if type == "crypto" else None,
+                    "sign": data["sign"] if type == "fiat" else None,
+                    "rank": data["rank"] if type == "crypto" else None,
+                    "type": type
+                })
+
+            success_count, failed_entries = db.currencies.create_many(items)
             logger.info(f"Insertion réussie de {success_count} {type} dans la base de données")
 
             if failed_entries:
@@ -70,19 +65,14 @@ def process_exchange_json(file):
             with open(file, "r") as f:
                 json_data = json.load(f)
 
-            success_count = 0
-            failed_entries = []
-
+            items = []
             for data in json_data["data"]:
-                try:
-                    exchange = db.exchanges.create(
-                        name=data["name"],
-                        slug=data["slug"]
-                    )
-                    success_count += 1
-                except IntegrityError:
-                    failed_entries.append(data)
-                    
+                items.append({
+                    "name": data["name"],
+                    "slug": data["slug"]
+                })
+
+            success_count, failed_entries = db.exchanges.create_many(items)  
             logger.info(f"Insertion réussie de {success_count} plateforme d'échanges dans la base de données")
 
             if failed_entries:
