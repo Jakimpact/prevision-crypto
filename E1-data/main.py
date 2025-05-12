@@ -7,7 +7,6 @@ sys.path.append(str(ROOT_DIR))
 
 from src.C1_extraction.extract_cryptodownload import extract_all_json
 from src.C1_extraction.extract_coinmarketcap import extract_maps
-from src.C4_database.database import init_db
 from src.C4_database.feed_db import  process_all_cd_json, process_all_cmc_json
 from src.settings import logger
 
@@ -33,20 +32,14 @@ def main():
     args = parse_args()
     
     # Si aucun composant n'est spécifié, exécute le pipeline complet
-    run_all = args.all or not any([args.create_db, 
-                                   args.extract,
+    run_all = args.all or not any([args.extract,
                                    args.clean,
                                    args.aggregate
                                 ])
     
     # Suivi des variables du pipeline
+    logger.info("Exécute les étapes de création / initialisation de la base de données")
 
-    # Création / initialisation de la bdd
-    if any([args.create_db, args.extract, args.clean, args.aggregate]) or run_all:
-        logger.info("Exécute les étapes de création / initialisation de la base de données")
-        engine, Session = init_db()
-        session = Session()
-    
     # Extraction des données
     if args.extract or run_all:
         logger.info("Exécute les étapes d'extraction")
@@ -55,12 +48,10 @@ def main():
     
     if args.feed_db or run_all:
         logger.info("Exécute les étapes d'alimentation brutes de la base de données")
-        process_all_cmc_json(session)
-        process_all_cd_json(session)
+        process_all_cmc_json()
+        process_all_cd_json()
 
     logger.info("Composants du pipeline sélectionnés terminés")
-
-    session.close()
 
 if __name__ == "__main__":
     main()
