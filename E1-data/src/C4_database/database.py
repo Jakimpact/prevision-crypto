@@ -1,8 +1,9 @@
+import os
+from functools import wraps
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import os
 
-from src.C4_database.models import Base
 from src.C4_database.crud import (
     CurrencyCRUD, 
     TradingPairCRUD, 
@@ -11,6 +12,7 @@ from src.C4_database.crud import (
     CSVHistoricalDataCRUD, 
     OHLCVCRUD
 )
+from src.C4_database.models import Base
 from src.settings import DatabaseSettings
 
 
@@ -22,6 +24,22 @@ os.makedirs(db_path, exist_ok=True)
 engine = create_engine(f'sqlite:///{db_path}/{db_filename}')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
+
+
+def with_session(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        session = Session()
+        try:
+            result = func(*args, session=session, **kwargs)
+            session.commit()
+            return result
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+    return wrapper
 
 
 class Database:

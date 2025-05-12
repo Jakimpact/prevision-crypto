@@ -1,15 +1,9 @@
 import json
 import os
 from pathlib import Path
-from datetime import datetime
-
-from sqlalchemy.exc import IntegrityError
 
 from src.C4_database.database import Database
 from src.settings import ExtractSettings, logger, LogSettings
-from src.C2_query.query_currencies import get_currency_by_symbol
-from src.C2_query.query_exchanges import get_exchange_by_name
-from src.C4_database.models import Currency, Exchange, TradingPair, CryptocurrencyCSV
 
 
 def process_all_cmc_json():
