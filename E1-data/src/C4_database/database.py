@@ -28,17 +28,12 @@ Session = sessionmaker(bind=engine)
 
 def with_session(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
-        session = Session()
-        try:
-            result = func(*args, session=session, **kwargs)
-            session.commit()
-            return result
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
+    def wrapper(*args, session=None, **kwargs):
+        if session is not None:
+            return func(*args, session=session, **kwargs)
+        else:
+            with Database() as db:
+                return func(*args, session=db.session, **kwargs)
     return wrapper
 
 
