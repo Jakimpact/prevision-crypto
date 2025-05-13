@@ -2,14 +2,20 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from src.C4_database.models import Exchange
 from src.C4_database.database import with_session
+from src.C4_database.models import Exchange
 
 
 @with_session
 def get_all_exchanges(session: Session) -> List[Exchange]:
     """Récupère tous les exchanges de la base de données"""
     return session.query(Exchange).all()
+
+
+@with_session
+def get_exchange_by_id(exchange_id: int, session: Session) -> Optional[Exchange]:
+    """Récupère une plateforme d'échange par son ID"""
+    return session.query(Exchange).filter(Exchange.id == exchange_id).first()
 
 
 @with_session

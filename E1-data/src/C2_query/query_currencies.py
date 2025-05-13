@@ -2,14 +2,20 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from src.C4_database.models import Currency
 from src.C4_database.database import with_session
+from src.C4_database.models import Currency
 
 
 @with_session
 def get_all_currencies(session: Session) -> List[Currency]:
     """Récupère toutes les devises de la base de données"""
     return session.query(Currency).all()
+
+
+@with_session
+def get_currency_by_id(currency_id: int, session: Session) -> Optional[Currency]:
+    """Récupère une devise par son ID"""
+    return session.query(Currency).filter(Currency.id == currency_id).first()
 
 
 @with_session
