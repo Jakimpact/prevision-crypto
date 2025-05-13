@@ -44,7 +44,7 @@ def process_currency_json(file, type):
             if failed_entries:
                 error_file = os.path.join(LogSettings.LOG_PATH, f"failed_{type}_insertion.json")
                 with open(error_file, "w") as f:
-                    json.dump([entry.__dict__ for entry in failed_entries], f, indent=4)
+                    json.dump(failed_entries, f, indent=4)
                 logger.info(f"{len(failed_entries)} {type} non insérées en raison de doublons ou d'erreurs. Détails dans {error_file}")
 
     except Exception as e:
@@ -72,7 +72,7 @@ def process_exchange_json(file):
             if failed_entries:
                 error_file = os.path.join(LogSettings.LOG_PATH, f"failed_exchange_insertion.json")
                 with open(error_file, "w") as f:
-                    json.dump([entry.__dict__ for entry in failed_entries], f, indent=4)
+                    json.dump(failed_entries, f, indent=4)
                 logger.info(f"{len(failed_entries)} plateformes d'échanges non insérées en raison de doublons ou d'erreurs. Détails dans {error_file}")
 
     except Exception as e:

@@ -26,7 +26,3 @@ def extract_all_json(json_urls=ExtractSettings.JSON_URLS):
 
     for item in json_urls:
         extract_json(url=json_urls[item], exchange=item)
-
-
-def extract_csv():
-    pass

@@ -8,6 +8,7 @@ sys.path.append(str(ROOT_DIR))
 from src.C1_extraction.extract_cryptodownload import extract_all_json
 from src.C1_extraction.extract_coinmarketcap import extract_maps
 from src.C4_database.feed_db.feed_coinmarketcap import  process_all_cmc_json
+from src.C4_database.feed_db.feed_cryptodowload import process_all_cd_json
 from src.settings import logger
 
 
@@ -48,6 +49,7 @@ def main():
     if args.feed_db or run_all:
         logger.info("Exécute les étapes d'alimentation brutes de la base de données")
         process_all_cmc_json()
+        process_all_cd_json()
 
     logger.info("Composants du pipeline sélectionnés terminés")
 
