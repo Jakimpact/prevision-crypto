@@ -39,6 +39,7 @@ class ExtractSettings():
     JSON_PATH_CMC = EXTRACT_CONFIG["save_dir"]["coinmarketcap"]
     JSON_URLS = EXTRACT_CONFIG["cryptodownload"]["json_urls"]
     CMC_MAPS = EXTRACT_CONFIG["coinmarketcap"]["maps"]
+    TRADING_PAIRS = EXTRACT_CONFIG["trading_pairs"]
 
 
 class SecretSettings():

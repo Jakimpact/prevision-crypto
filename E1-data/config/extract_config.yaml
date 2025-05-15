@@ -10,4 +10,13 @@ coinmarketcap:
   maps:
     cryptocurrency_map: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map"
     fiat_map:  "https://pro-api.coinmarketcap.com/v1/fiat/map"
-    exchange_map: "https://pro-api.coinmarketcap.com/v1/exchange/map" 
+    exchange_map: "https://pro-api.coinmarketcap.com/v1/exchange/map"
+trading_pairs:
+  -
+    base_name: "Bitcoin"
+    quote_name: "United States Dollar"
+    timeframe: "minute"
+  -
+    base_name: "Bitcoin"
+    quote_name: "Tether USDt"
+    timeframe: "minute"

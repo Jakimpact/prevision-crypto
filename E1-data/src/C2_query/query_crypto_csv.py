@@ -48,7 +48,7 @@ def get_crypto_csvs_by_date_range(start_date: datetime, end_date: datetime, sess
 
 @with_session
 def get_crypto_csvs_by_trading_pair_and_timeframe(trading_pair_id: int, timeframe: str, session: Session = None) -> Optional[CryptocurrencyCSV]:
-    """Récupère un fichier CSV spécifique par exchange, paire de trading et timeframe"""
+    """Récupère tous les fichiers CSV pour une paire de trading et un timeframe"""
     return (session.query(CryptocurrencyCSV)
             .filter(CryptocurrencyCSV.trading_pair_id == trading_pair_id)
             .filter(CryptocurrencyCSV.timeframe == timeframe)
@@ -63,3 +63,12 @@ def get_crypto_csv_by_params(exchange_id: int, trading_pair_id: int, timeframe: 
             .filter(CryptocurrencyCSV.trading_pair_id == trading_pair_id)
             .filter(CryptocurrencyCSV.timeframe == timeframe)
             .first())
+
+
+@with_session
+def search_crypto_csvs_by_trading_pair_and_timeframe(trading_pair_id: int, timeframe: str, session: Session = None) -> Optional[CryptocurrencyCSV]:
+    """Cherche tous les fichiers CSV pour une paire de trading et un timeframe donné"""
+    return (session.query(CryptocurrencyCSV)
+            .filter(CryptocurrencyCSV.trading_pair_id == trading_pair_id)
+            .filter(CryptocurrencyCSV.timeframe.ilike(f"%{timeframe}%"))
+            .all())

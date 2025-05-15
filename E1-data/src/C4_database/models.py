@@ -97,7 +97,7 @@ class CSVHistoricalData(Base):
 
     id = Column(Integer, primary_key=True)
     csv_file_id = Column(Integer, ForeignKey("cryptocurrency_csv.id"), nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    date = Column(DateTime, nullable=False)
     open = Column(Float, nullable=False)
     high = Column(Float, nullable=False)
     low = Column(Float, nullable=False)
@@ -107,12 +107,12 @@ class CSVHistoricalData(Base):
     csv_file = relationship("CryptocurrencyCSV", foreign_keys=[csv_file_id], back_populates="historical_data")
 
     __table_args__ = (
-        UniqueConstraint("csv_file_id", "timestamp", name="uniq_historical_data_csv_file_timestamp"),
+        UniqueConstraint("csv_file_id", "date", name="uniq_historical_data_csv_file_date"),
     )
 
     def __repr__(self):
         return (f"<CSVHistoricalData(csv_file='{self.csv_file.file_url}', "
-                f"timestamp='{self.timestamp}', "
+                f"date='{self.date}', "
                 f"open='{self.open}', high='{self.high}', "
                 f"low='{self.low}', close='{self.close}')>")
 
@@ -122,7 +122,7 @@ class OHLCV(Base):
 
     id = Column(Integer, primary_key=True)
     trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    date = Column(DateTime, nullable=False)
     open = Column(Float, nullable=False)
     high = Column(Float, nullable=False)
     low = Column(Float, nullable=False)
@@ -132,10 +132,10 @@ class OHLCV(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "timestamp", name="uniq_ohlcv_trading_pair_timestamp"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
     )
 
     def __repr__(self):
         return (f"<OHLCV(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
-                f"timestamp='{self.timestamp}', open='{self.open}', high='{self.high}',"
+                f"date='{self.date}', open='{self.open}', high='{self.high}',"
                 f"low='{self.low}', close='{self.close}', volume='{self.volume})>")
