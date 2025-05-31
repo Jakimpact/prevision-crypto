@@ -6,16 +6,12 @@ from requests.exceptions import RequestException
 from src.settings import ExtractSettings, logger, SecretSettings
 
 
-def save_to_json(data, type, save_dir=ExtractSettings.JSON_PATH_CMC):
-    """Sauvegarde les données sous un format JSON"""
+def extract_maps(cmc_maps=ExtractSettings.CMC_MAPS):
+    """Lance l'extraction de toutes les mappings nécéssaires depuis l'API de CoinMarketCap et les sauvegarde en json"""
 
-    os.makedirs(save_dir, exist_ok=True)
-    filename = os.path.join(save_dir, f"{type}.json")
-    try:
-        with open(filename, 'w') as f:
-            json.dump(data, f, indent=4)
-    except Exception as e:
-        logger.error(f"Erreur pendant la sauvegarde des données : {e}")
+    for map in cmc_maps:
+        json = fetch_map(url=cmc_maps[map])
+        save_to_json(data=json, type=map)
 
 
 def fetch_map(url):
@@ -39,9 +35,13 @@ def fetch_map(url):
         return None
 
 
-def extract_maps(cmc_maps=ExtractSettings.CMC_MAPS):
-    """Lance l'extraction de toutes les mappings nécéssaires depuis l'API de CoinMarketCap et les sauvegarde en json"""
+def save_to_json(data, type, save_dir=ExtractSettings.JSON_PATH_CMC):
+    """Sauvegarde les données sous un format JSON"""
 
-    for map in cmc_maps:
-        json = fetch_map(url=cmc_maps[map])
-        save_to_json(data=json, type=map)
+    os.makedirs(save_dir, exist_ok=True)
+    filename = os.path.join(save_dir, f"{type}.json")
+    try:
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=4)
+    except Exception as e:
+        logger.error(f"Erreur pendant la sauvegarde des données : {e}")
