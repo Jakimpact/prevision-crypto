@@ -4,16 +4,16 @@ from src.C4_database.database import Database
 from src.settings import logger, LogSettings
 
 
-def save_csv_data_to_db(df: pd.DataFrame, db):
+def save_csv_data_to_db(df: pd.DataFrame, db, crypto_csv):
     """Ajoute les données d'un dataframe contenant des données OHLCV de fichiers CSV à la base de données."""
 
     try:
         data_to_insert = df.to_dict(orient="records")
         success_count, failed_entries = db.historical_data.create_many(data_to_insert)
-        logger.info(f"Insertion réussie de {success_count} données historiques OHLCV dans la base de données")
+        logger.info(f"Insertion réussie de {success_count} données historiques OHLCV du fichier CSV {crypto_csv.file_url} dans la base de données")
 
         if failed_entries:
-            logger.info(f"{len(failed_entries)} lignes non insérées pour les données historiques OHLCV")
+            logger.info(f"{len(failed_entries)} lignes non insérées pour les données historiques OHLCV du fichier CSV {crypto_csv.file_url}")
 
     except Exception as e:
-        logger.error(f"Erreur lors de l'insertion des données historiques OHLCV issu des CSV dans la base de données : {e}")
+        logger.error(f"Erreur lors de l'insertion des données historiques OHLCV issu du fichier CSV {crypto_csv.file_url} dans la base de données : {e}")

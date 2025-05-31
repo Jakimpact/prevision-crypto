@@ -31,37 +31,15 @@ def extract_all_pairs_data(trading_pairs_to_extract=ExtractSettings.TRADING_PAIR
                 continue
             
             for crypto_csv in csvs_to_extract:
-                df = read_csv_data(crypto_csv)
+                csv_year = extract_year_from_timeframe(crypto_csv.timeframe)
+                if csv_year is None or csv_year < pair_to_extract["from_year"]:
+                    continue
+
+                df = read_csv_data(crypto_csv, csv_year)
                 if df is not None:
-                    save_csv_data_to_db(df, db)
+                    save_csv_data_to_db(df, db, crypto_csv)
                 else:
                     logger.warning(f"Aucune donnée valide trouvée dans le csv {crypto_csv.file_url} pour la pair de trading {pair_to_extract['base_name']}/{pair_to_extract['quote_name']} et le timeframe {pair_to_extract['timeframe']}")
-
-
-def read_csv_data(crypto_csv):
-    """Lit et formate les données d'un fichier CSV récupéré depuis une URL pour les retourner sous forme de DataFrame."""
-    
-    try:
-        response = requests.get(crypto_csv.file_url)
-        response.raise_for_status()
-        csv_io = io.StringIO(response.text)
-
-        year_timeframe = extract_year_from_timeframe(crypto_csv.timeframe)
-        quote_symbol = crypto_csv.trading_pair.quote_currency.symbol.lower()
-
-        df = pd.read_csv(csv_io, sep=",", header=1)
-        df.columns = df.columns.str.lower()
-        df = df[["date", "open", "high", "low", "close", f"volume {quote_symbol}"]]
-        df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d %H:%M:%S")
-        df = df.rename(columns={f"volume {quote_symbol}": "volume"})
-        df = df[df["date"].dt.year == year_timeframe]
-        df["csv_file_id"] = crypto_csv.id
-
-        return df
-
-    except Exception as e:
-        logger.error(f"Erreur lors de la lecture du fichier CSV {crypto_csv.file_url}: {e}")
-        return None
 
 
 def extract_year_from_timeframe(timeframe):
@@ -73,3 +51,28 @@ def extract_year_from_timeframe(timeframe):
         if first_part.isdigit() and len(first_part) == 4:
             return int(first_part)
     return None
+
+
+def read_csv_data(crypto_csv, csv_year):
+    """Lit et formate les données d'un fichier CSV récupéré depuis une URL pour les retourner sous forme de DataFrame."""
+
+    try:
+        response = requests.get(crypto_csv.file_url)
+        response.raise_for_status()
+        csv_io = io.StringIO(response.text)
+
+        quote_symbol = crypto_csv.trading_pair.quote_currency.symbol.lower()
+
+        df = pd.read_csv(csv_io, sep=",", header=1)
+        df.columns = df.columns.str.lower()
+        df = df[["date", "open", "high", "low", "close", f"volume {quote_symbol}"]]
+        df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d %H:%M:%S")
+        df = df.rename(columns={f"volume {quote_symbol}": "volume"})
+        df = df[df["date"].dt.year == csv_year]
+        df["csv_file_id"] = crypto_csv.id
+
+        return df
+
+    except Exception as e:
+        logger.error(f"Erreur lors de la lecture du fichier CSV {crypto_csv.file_url}: {e}")
+        return None

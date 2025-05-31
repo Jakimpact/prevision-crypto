@@ -16,7 +16,9 @@ trading_pairs:
     base_name: "Bitcoin"
     quote_name: "United States Dollar"
     timeframe: "minute"
+    from_year: 2020
   -
     base_name: "Bitcoin"
     quote_name: "Tether USDt"
     timeframe: "minute"
+    from_year: 2020
