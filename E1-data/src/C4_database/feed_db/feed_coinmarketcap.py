@@ -42,6 +42,7 @@ def process_currency_json(file, type):
             logger.info(f"Insertion réussie de {success_count} {type} dans la base de données")
 
             if failed_entries:
+                os.makedirs(LogSettings.LOG_PATH, exist_ok=True)
                 error_file = os.path.join(LogSettings.LOG_PATH, f"failed_{type}_insertion.json")
                 with open(error_file, "w") as f:
                     json.dump(failed_entries, f, indent=4)
@@ -70,6 +71,7 @@ def process_exchange_json(file):
             logger.info(f"Insertion réussie de {success_count} plateforme d'échanges dans la base de données")
 
             if failed_entries:
+                os.makedirs(LogSettings.LOG_PATH, exist_ok=True)
                 error_file = os.path.join(LogSettings.LOG_PATH, f"failed_exchange_insertion.json")
                 with open(error_file, "w") as f:
                     json.dump(failed_entries, f, indent=4)

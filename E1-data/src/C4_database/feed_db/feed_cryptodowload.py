@@ -59,6 +59,7 @@ def process_cd_json(file, exchange, db):
 
         failed_entries = failed_pairs + failed_entries
         if failed_entries:
+            os.makedirs(LogSettings.LOG_PATH, exist_ok=True)
             error_file = os.path.join(LogSettings.LOG_PATH, f"failed_csv_entries_{exchange.name}.json")
             with open(error_file, "w") as f:
                 json.dump(failed_entries, f, indent=4)
@@ -101,8 +102,7 @@ def get_trading_pair(pair, exchange_name, db):
         return trading_pair
     else:
         try:
-            with Database() as db:
-                trading_pair = db.trading_pairs.create(base_currency_id=base_currency.id, quote_currency_id=quote_currency.id)
-                return trading_pair
+            trading_pair = db.trading_pairs.create(base_currency_id=base_currency.id, quote_currency_id=quote_currency.id)
+            return trading_pair
         except Exception as e:
             return None
