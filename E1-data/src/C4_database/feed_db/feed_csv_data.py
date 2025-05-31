@@ -1,3 +1,6 @@
+import json
+import os
+
 import pandas as pd
 
 from src.C4_database.database import Database
@@ -13,7 +16,11 @@ def save_csv_data_to_db(df: pd.DataFrame, db, crypto_csv):
         logger.info(f"Insertion réussie de {success_count} données historiques OHLCV du fichier CSV {crypto_csv.file_url} dans la base de données")
 
         if failed_entries:
-            logger.info(f"{len(failed_entries)} lignes non insérées pour les données historiques OHLCV du fichier CSV {crypto_csv.file_url}")
+            os.makedirs(LogSettings.LOG_PATH, exist_ok=True)
+            error_file = os.path.join(LogSettings.LOG_PATH, f"failed_ohlcv_entries_{crypto_csv.file_url.split('/')[-1].split(".")[0]}.json")
+            with open(error_file, "w") as f:
+                json.dump(failed_entries, f, indent=4)
+            logger.info(f"{len(failed_entries)} lignes non insérées pour les données historiques OHLCV. Détails dans {error_file}")
 
     except Exception as e:
         logger.error(f"Erreur lors de l'insertion des données historiques OHLCV issu du fichier CSV {crypto_csv.file_url} dans la base de données : {e}")

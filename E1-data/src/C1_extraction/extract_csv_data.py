@@ -65,10 +65,21 @@ def read_csv_data(crypto_csv, csv_year):
 
         df = pd.read_csv(csv_io, sep=",", header=1)
         df.columns = df.columns.str.lower()
-        df = df[["date", "open", "high", "low", "close", f"volume {quote_symbol}"]]
-        df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d %H:%M:%S")
-        df = df.rename(columns={f"volume {quote_symbol}": "volume"})
+
+        # Sélectionne la bonne colonne de volume selon le nommage des csv
+        volumes_col_names = [f"volume {quote_symbol}", "volume_from"]
+        volume_col_name = next((col for col in volumes_col_names if col in df.columns), None)
+
+        df = df[["date", "open", "high", "low", "close", volume_col_name]]
+        df = df.rename(columns={volume_col_name: "volume_quote"})
+
+        # Gestion des dates
+        df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
+        df = df.dropna(subset=["date"])
         df = df[df["date"].dt.year == csv_year]
+        df["date"] = df["date"].dt.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Ajout des colonnes manquantes
         df["csv_file_id"] = crypto_csv.id
 
         return df

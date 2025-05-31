@@ -102,7 +102,7 @@ class CSVHistoricalData(Base):
     high = Column(Float, nullable=False)
     low = Column(Float, nullable=False)
     close = Column(Float, nullable=False)
-    volume = Column(Float, nullable=False)
+    volume_quote = Column(Float, nullable=False)
 
     csv_file = relationship("CryptocurrencyCSV", foreign_keys=[csv_file_id], back_populates="historical_data")
 
@@ -127,7 +127,7 @@ class OHLCV(Base):
     high = Column(Float, nullable=False)
     low = Column(Float, nullable=False)
     close = Column(Float, nullable=False)
-    volume = Column(Float, nullable=False)
+    volume_quote = Column(Float, nullable=False)
 
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_data")
 

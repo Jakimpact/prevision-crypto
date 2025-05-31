@@ -30,32 +30,36 @@ class BaseCRUD:
             self.db.rollback()
             raise
 
-    def create_many(self, items: List[Dict], bulk: bool=True):
+    def create_many(self, items: List[Dict], batch_size: int=10000):
         """
         Méthode pour insérer plusieurs objets dans la base de données.
         Retourne le nombre d'objets insérés avec succès et une liste des objets qui n'ont pas pu être insérés
         """
-        success = []
+        sucess_count = 0
         failed = []
+        
+        # On essaie d'insérer les objets en batch
+        for i in range(0, len(items), batch_size):
+            batch = items[i:i+batch_size]
 
-        # Essai de créer les objets avec un bulk 
-        if bulk:
             try:
-                self.db.bulk_insert_mappings(self.model, items)
+                self.db.bulk_insert_mappings(self.model, batch)
                 self.db.commit()
-                return len(items), []
+                sucess_count += len(batch)
+
+            # Si le bulk échoue, on rollback et on essaie d'ajouter les objets un par un
             except IntegrityError:
                 self.db.rollback()
+                for item in batch:
+                    try:
+                        self.create(**item)
+                        sucess_count += 1
+                    # Si l'insertion échoue, on ajoute l'objet à la liste des échecs
+                    except IntegrityError:
+                        failed.append(item)
 
-        # Si le bulk échoue, on les insère un par un
-        for data in items:
-            try:
-                self.create(**data)
-                success.append(data)
-            except IntegrityError:
-                failed.append(data)
-        
-        return len(success), failed
+        return sucess_count, failed
+
 
     def get(self, id: int):
         return self.db.query(self.model).get(id)
