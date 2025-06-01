@@ -37,9 +37,3 @@ def get_trading_pairs_by_base_currency(base_currency_id: int, session: Session =
 def get_trading_pairs_by_quote_currency(quote_currency_id: int, session: Session = None) -> List[TradingPair]:
     """Récupère toutes les paires de trading pour une devise de cotation donnée"""
     return session.query(TradingPair).filter(TradingPair.quote_currency_id == quote_currency_id).all()
-
-
-@with_session
-def search_trading_pairs(search_term: str, session: Session = None) -> List[TradingPair]:
-    """Recherche des paires de trading par symbole (recherche partielle)"""
-    return session.query(TradingPair).filter(TradingPair.symbol.ilike(f"%{search_term}%")).all()

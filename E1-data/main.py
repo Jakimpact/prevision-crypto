@@ -8,6 +8,7 @@ sys.path.append(str(ROOT_DIR))
 from src.C1_extraction.extract_coinmarketcap import extract_maps
 from src.C1_extraction.extract_cryptodownload import extract_all_json
 from src.C1_extraction.extract_csv_data import extract_all_pairs_data
+from src.C3_aggregate.aggregate_ohlcv import aggregate_all_ohlcv
 from src.C4_database.feed_db.feed_coinmarketcap import  process_all_cmc_json
 from src.C4_database.feed_db.feed_cryptodowload import process_all_cd_json
 from src.settings import logger
@@ -60,6 +61,12 @@ def main():
         extract_all_pairs_data()
 
     logger.info("Composants du pipeline sélectionnés terminés")
+
+    # Agrégation des données
+    if args.aggregate or run_all:
+        logger.info("Exécute les étapes d'agrégation")
+        aggregate_all_ohlcv()
+        
 
 if __name__ == "__main__":
     main()
