@@ -77,7 +77,6 @@ def read_csv_data(crypto_csv, csv_year):
         df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
         df = df.dropna(subset=["date"])
         df = df[df["date"].dt.year == csv_year]
-        df["date"] = df["date"].dt.strftime("%Y-%m-%d %H:%M:%S")
 
         # Ajout des colonnes manquantes
         df["csv_file_id"] = crypto_csv.id
