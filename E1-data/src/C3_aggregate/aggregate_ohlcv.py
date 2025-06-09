@@ -26,36 +26,45 @@ def aggregate_all_ohlcv():
 
 def aggregate_ohlcv_data(ohlcv_data, trading_pair):
     """Agrège les données OHLCV de la table CSVHistoricalData d'une paire de trading spécifique."""
-    
+
     try:
-        df = pd.DataFrame({
-            "trading_pair_id": trading_pair.id,
-            'date': data.date,
-            'open': data.open,
-            'high': data.high,
-            'low': data.low,
-            'close': data.close,
-            'volume_quote': data.volume_quote
-        } for data in ohlcv_data)
+        records = [(data.date, data.open, data.high, data.low, data.close, data.volume_quote)
+                   for data in ohlcv_data]
+
+        df = pd.DataFrame.from_records(records, columns=["date", "open", "high", "low", "close", "volume_quote"])
+        df["trading_pair_id"] = trading_pair.id
+
+        df["weighted_open"] = df["open"] * df["volume_quote"]
+        df["weighted_close"] = df["close"] * df["volume_quote"]
 
         aggregated_df = df.groupby(["trading_pair_id", "date"], as_index=False).agg({
-            "open": lambda x: weighted_average(x, df.loc[x.index, "volume_quote"]),
+            "weighted_open": "sum",
+            "weighted_close": "sum",
+            "open": "mean", # dans le cas où volume_quote == 0
+            "close": "mean", # dans le cas où volume_quote == 0
+            "volume_quote": "sum",
             "high": "max",
-            "low": "min",
-            "close": lambda x: weighted_average(x, df.loc[x.index, "volume_quote"]),
-            "volume_quote": "sum"
+            "low": "min"
         })
 
+        # Moyenne pondérée ou moyenne simple selon si le volume_quote est égale à 0
+        aggregated_df["open"] = np.where(
+            aggregated_df["volume_quote"] == 0,
+            aggregated_df["open"],
+            aggregated_df["weighted_open"] / aggregated_df["volume_quote"]
+        )
+        aggregated_df["close"] = np.where(
+            aggregated_df["volume_quote"] == 0,
+            aggregated_df["close"],
+            aggregated_df["weighted_close"] / aggregated_df["volume_quote"]
+        )
+
+        aggregated_df = aggregated_df.drop(columns=["weighted_open", "weighted_close"])
+
         return aggregated_df
-    
+
     except Exception as e:
-        logger.error(f"Erreur lors de l'agrégation des données historique OHLCV pour la paire {trading_pair.base_currency.symbol}/{trading_pair.quote_currency.symbol}: {e}")
+        logger.error(
+            f"Erreur lors de l'agrégation des données OHLCV pour la paire {trading_pair.base_currency.symbol}/{trading_pair.quote_currency.symbol}: {e}"
+        )
         return None
-    
-
-def weighted_average(x, weights):
-    """Calcule la moyenne pondérée en gérant le cas où tous les poids sont à 0."""
-
-    if np.sum(weights) == 0:
-        return np.mean(x)
-    return np.average(x, weights=weights)
