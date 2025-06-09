@@ -19,54 +19,52 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Exécute tous les composants du pipeline E1")
     
-    parser.add_argument("--extract", action="store_true", help="Exécute les étapes d'extraction")
-    parser.add_argument("--extract_2", action="store_true", help="Exécute le pipeline complet")
-    parser.add_argument("--feed_db", action="store_true", help="Exécute les étapes d'alimentation brutes de la base de données")
+    parser.add_argument("--extract_files", action="store_true", help="Exécute les étapes d'extraction des fichiers")
+    parser.add_argument("--feed_raw_db", action="store_true", help="Exécute les étapes d'alimentation brutes de la base de données")
+    parser.add_argument("--extract_data", action="store_true", help="Exécute les étapes d'extraction des données")
     parser.add_argument("--aggregate", action="store_true", help="Exécute les étapes d'agrégation")
-    parser.add_argument("--clean", action="store_true", help="Exécute les étapes de nettoyage")
     parser.add_argument("--all", action="store_true", help="Exécute le pipeline complet")
     
     return parser.parse_args()
 
 
 def main():
-    """Exécute les composants du pipeline E1 en fonction des arguments de la ligne de commande"""
+    """Exécute les composants du pipeline ETL en fonction des arguments de la ligne de commande"""
 
     args = parse_args()
     
     # Si aucun composant n'est spécifié, exécute le pipeline complet
-    run_all = args.all or not any([args.extract,
-                                   args.extract_2,
-                                   args.clean,
+    run_all = args.all or not any([args.extract_files,
+                                   args.feed_raw_db,
+                                   args.extract_data,
                                    args.aggregate
                                 ])
-    
-    # Suivi des variables du pipeline
-    logger.info("Exécute les étapes de création / initialisation de la base de données")
 
-    # Extraction des données
-    if args.extract or run_all:
-        logger.info("Exécute les étapes d'extraction")
+    logger.info("Démarrage du pipeline ETL")
+
+    # Extraction de fichiers JSON et CSV
+    if args.extract_files or run_all:
+        logger.info("Exécute les étapes d'extraction des fichiers")
         extract_maps()
         extract_all_json()
     
-    if args.feed_db or run_all:
+    if args.feed_raw_db or run_all:
         logger.info("Exécute les étapes d'alimentation brutes de la base de données")
         process_all_cmc_json()
         process_all_cd_json()
 
-    # Seconde étape d'extraction
-    if args.extract_2 or run_all:
+    # Extraction des données à partir des fichiers CSV
+    if args.extract_data or run_all:
         logger.info("Exécute les étapes d'extraction des données à partir des csv de la bdd")
         extract_all_pairs_data()
-
-    logger.info("Composants du pipeline sélectionnés terminés")
 
     # Agrégation des données
     if args.aggregate or run_all:
         logger.info("Exécute les étapes d'agrégation")
         aggregate_all_ohlcv()
         
+    logger.info("Composants du pipeline ETL sélectionnés terminés avec succès")
+
 
 if __name__ == "__main__":
     main()
