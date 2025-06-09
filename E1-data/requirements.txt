@@ -1,5 +1,7 @@
 dotenv
+fastapi
 pandas
 PyYAML
 requests
 SQLAlchemy
+uvicorn
