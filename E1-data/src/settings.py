@@ -44,6 +44,10 @@ class ExtractSettings():
 
 class SecretSettings():
     CMC_API_KEY = os.getenv("CMC_API_KEY")
+    API_SECRET_KEY = os.getenv("API_SECRET_KEY")
+    API_ALGORITHM = os.getenv("API_ALGORITHM")
+    API_USERNAME = os.getenv("API_USERNAME")
+    API_PASSWORD = os.getenv("API_PASSWORD")
 
 
 class LogSettings():

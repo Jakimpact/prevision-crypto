@@ -17,7 +17,7 @@ def save_csv_data_to_db(df: pd.DataFrame, db, crypto_csv):
 
         if failed_entries:
             os.makedirs(LogSettings.LOG_PATH, exist_ok=True)
-            error_file = os.path.join(LogSettings.LOG_PATH, f"failed_ohlcv_entries_{crypto_csv.file_url.split('/')[-1].split(".")[0]}.json")
+            error_file = os.path.join(LogSettings.LOG_PATH, f"failed_ohlcv_entries_{crypto_csv.file_url.split('/')[-1].split('.')[0]}.json")
             with open(error_file, "w") as f:
                 json.dump(failed_entries, f, default=str, indent=4)
             logger.info(f"{len(failed_entries)} lignes non insérées pour les données historiques OHLCV. Détails dans {error_file}")
