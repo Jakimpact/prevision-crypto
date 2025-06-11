@@ -1,7 +1,7 @@
-from typing import List, Dict
+from typing import Dict, List, Optional
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload, Session
 
 from src.C4_database.models import (
     Base, 
@@ -12,6 +12,7 @@ from src.C4_database.models import (
     CSVHistoricalData, 
     OHLCV
 )
+from src.utils.functions import validate_date
 
 
 class BaseCRUD:
@@ -98,6 +99,25 @@ class CurrencyCRUD(BaseCRUD):
 class TradingPairCRUD(BaseCRUD):
     def __init__(self, db: Session):
         super().__init__(TradingPair, db)
+        
+    def get_pairs_by_base_currency_symbol(self, symbol: str):
+        """Récupère toutes les paires pour lesquelles le symbol donné apparaît comme base currency."""
+        pairs = (self.db.query(self.model)
+                .options(joinedload(self.model.base_currency),
+                        joinedload(self.model.quote_currency))
+                .filter(self.model.base_currency.has(Currency.symbol == symbol))
+                .all())
+        return pairs
+
+    def get_pair_by_currency_symbols(self, base_symbol: str, quote_symbol: str):
+        """Récupère une paire de trading spécifique à partir des symbols des currency base et quote."""
+        pair = (self.db.query(self.model)
+                .options(joinedload(self.model.base_currency),
+                        joinedload(self.model.quote_currency))
+                .filter(self.model.base_currency.has(Currency.symbol == base_symbol))
+                .filter(self.model.quote_currency.has(Currency.symbol == quote_symbol))
+                .first())
+        return pair
 
 
 class ExchangeCRUD(BaseCRUD):
@@ -118,3 +138,20 @@ class CSVHistoricalDataCRUD(BaseCRUD):
 class OHLCVCRUD(BaseCRUD):
     def __init__(self, db: Session):
         super().__init__(OHLCV, db)
+    
+    def get_ohlcv_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
+        """
+        Récupère les données OHLCV pour une paire de trading.
+        Si start_date est fourni, ne retourne que les données à partir de cette date.
+        Args:
+            trading_pair_id: ID de la paire de trading
+            start_date: Date de début au format 'YYYY-MM-DD' ou 'YYYY-MM-DD HH:MM:SS'
+        """
+        query = self.db.query(self.model).filter(self.model.trading_pair_id == trading_pair_id)
+        
+        if start_date:
+            validated_date = validate_date(start_date)
+            if validated_date:
+                query = query.filter(self.model.date >= validated_date)
+                
+        return query.order_by(self.model.date.asc()).all()
