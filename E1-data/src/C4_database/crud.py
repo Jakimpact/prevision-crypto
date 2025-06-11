@@ -10,7 +10,8 @@ from src.C4_database.models import (
     Exchange, 
     CryptocurrencyCSV, 
     CSVHistoricalData, 
-    OHLCV
+    OHLCV,
+    User
 )
 from src.utils.functions import validate_date
 
@@ -155,3 +156,12 @@ class OHLCVCRUD(BaseCRUD):
                 query = query.filter(self.model.date >= validated_date)
                 
         return query.order_by(self.model.date.asc()).all()
+
+
+class UserCRUD(BaseCRUD):
+    def __init__(self, db: Session):
+        super().__init__(User, db)
+    
+    def get_by_username(self, username: str):
+        """Récupère un utilisateur par son nom d'utilisateur."""
+        return self.db.query(self.model).filter(self.model.username == username).first()

@@ -10,7 +10,8 @@ from src.C4_database.crud import (
     ExchangeCRUD, 
     CryptocurrencyCSVCRUD, 
     CSVHistoricalDataCRUD, 
-    OHLCVCRUD
+    OHLCVCRUD,
+    UserCRUD
 )
 from src.C4_database.models import Base
 from src.settings import DatabaseSettings
@@ -48,6 +49,7 @@ class Database:
         self.crypto_csvs = CryptocurrencyCSVCRUD(self.session)
         self.historical_data = CSVHistoricalDataCRUD(self.session)
         self.ohlcv = OHLCVCRUD(self.session)
+        self.users = UserCRUD(self.session)
 
     def __enter__(self):
         return self

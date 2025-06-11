@@ -139,3 +139,15 @@ class OHLCV(Base):
         return (f"<OHLCV(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
                 f"date='{self.date}', open='{self.open}', high='{self.high}',"
                 f"low='{self.low}', close='{self.close}', volume='{self.volume})>")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    password_hashed = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="active")
+
+    def __repr__(self):
+        return f"<User(username='{self.username}', status='{self.status}')>"
