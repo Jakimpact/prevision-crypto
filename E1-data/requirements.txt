@@ -1,0 +1,10 @@
+dotenv
+fastapi
+pandas
+passlib
+python-jose
+python-multipart
+PyYAML
+requests
+SQLAlchemy
+uvicorn
