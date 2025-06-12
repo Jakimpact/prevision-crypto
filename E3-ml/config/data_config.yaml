@@ -1,0 +1,13 @@
+E1_API_BASE_URL: "http://localhost:8000/api/v1"
+E1_API_LOGIN_URL: "http://localhost:8000/api/v1/login"
+E1_API_OHLCV_URL: "http://localhost:8000/api/v1/ohlcv/ohlcv_by_trading_pair_id"
+
+CSV_DIR_PATH: "data/csv"
+
+TRADING_PAIRS:
+  -
+    id: 991
+    symbol: "BTC-USD"
+    base_currency: "BTC"
+    quote_currency: "USD"
+    start_date: "2020-01-01"
