@@ -8,7 +8,7 @@ sys.path.append(str(ROOT_DIR))
 from src.C1_extraction.extract_coinmarketcap import extract_maps
 from src.C1_extraction.extract_cryptodownload import extract_all_json
 from src.C1_extraction.extract_csv_data import extract_all_pairs_data
-from src.C3_aggregate.aggregate_ohlcv import aggregate_all_ohlcv
+from src.C3_aggregate.aggregate_ohlcv import aggregate_all_ohlcv_by_minute, aggregate_all_ohlcv_by_hour_and_day
 from src.C4_database.feed_db.feed_coinmarketcap import  process_all_cmc_json
 from src.C4_database.feed_db.feed_cryptodowload import process_all_cd_json
 from src.C4_database.feed_db.feed_user import create_initial_api_user
@@ -64,7 +64,8 @@ def main():
     # Agrégation des données
     if args.aggregate or run_all:
         logger.info("Exécute les étapes d'agrégation")
-        aggregate_all_ohlcv()
+        aggregate_all_ohlcv_by_minute()
+        aggregate_all_ohlcv_by_hour_and_day()
 
     # Initialisation de l'utilisateur API
     if args.initiate_api_user or run_all:

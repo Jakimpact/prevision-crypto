@@ -10,7 +10,7 @@ def create_initial_api_user():
         # Vérifie si l'utilisateur API existe déjà
         existing_user = db.users.get_by_username(SecretSettings.API_USERNAME)
         if existing_user:
-            pass
+            return
 
         # Crée un nouvel utilisateur API
         user = db.users.create(
