@@ -10,9 +10,12 @@ from src.C4_database.models import (
     Exchange, 
     CryptocurrencyCSV, 
     CSVHistoricalData, 
-    OHLCV,
+    OHLCVMinute,
+    OHLCVHourly,
+    OHLCVDaily,
     User
 )
+from src.settings import logger
 from src.utils.functions import validate_date
 
 
@@ -50,7 +53,9 @@ class BaseCRUD:
                 sucess_count += len(batch)
 
             # Si le bulk échoue, on rollback et on essaie d'ajouter les objets un par un
-            except IntegrityError:
+            except IntegrityError as e:
+                logger.error(f"Erreur lors de l'insertion en batch. Tentative d'insertion individuelle pour {len(batch)} objets.")
+                print(f"Erreur: {e}")
                 self.db.rollback()
                 for item in batch:
                     try:
@@ -136,10 +141,54 @@ class CSVHistoricalDataCRUD(BaseCRUD):
         super().__init__(CSVHistoricalData, db)
 
 
-class OHLCVCRUD(BaseCRUD):
+class OHLCVMinuteCRUD(BaseCRUD):
     def __init__(self, db: Session):
-        super().__init__(OHLCV, db)
+        super().__init__(OHLCVMinute, db)
     
+    def get_ohlcv_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
+        """
+        Récupère les données OHLCV pour une paire de trading.
+        Si start_date est fourni, ne retourne que les données à partir de cette date.
+        Args:
+            trading_pair_id: ID de la paire de trading
+            start_date: Date de début au format 'YYYY-MM-DD' ou 'YYYY-MM-DD HH:MM:SS'
+        """
+        query = self.db.query(self.model).filter(self.model.trading_pair_id == trading_pair_id)
+        
+        if start_date:
+            validated_date = validate_date(start_date)
+            if validated_date:
+                query = query.filter(self.model.date >= validated_date)
+                
+        return query.order_by(self.model.date.asc()).all()
+
+
+class OHLCVHourlyCRUD(BaseCRUD):
+    def __init__(self, db: Session):
+        super().__init__(OHLCVHourly, db)
+
+    def get_ohlcv_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
+        """
+        Récupère les données OHLCV pour une paire de trading.
+        Si start_date est fourni, ne retourne que les données à partir de cette date.
+        Args:
+            trading_pair_id: ID de la paire de trading
+            start_date: Date de début au format 'YYYY-MM-DD' ou 'YYYY-MM-DD HH:MM:SS'
+        """
+        query = self.db.query(self.model).filter(self.model.trading_pair_id == trading_pair_id)
+        
+        if start_date:
+            validated_date = validate_date(start_date)
+            if validated_date:
+                query = query.filter(self.model.date >= validated_date)
+                
+        return query.order_by(self.model.date.asc()).all()
+
+
+class OHLCVDailyCRUD(BaseCRUD):
+    def __init__(self, db: Session):
+        super().__init__(OHLCVDaily, db)
+
     def get_ohlcv_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
         """
         Récupère les données OHLCV pour une paire de trading.
