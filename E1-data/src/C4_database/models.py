@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Enum, Integer, Float, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Column, DateTime, Integer, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -40,7 +40,9 @@ class TradingPair(Base):
     base_currency = relationship("Currency", foreign_keys=[base_currency_id], back_populates="base_pairs")
     quote_currency = relationship("Currency", foreign_keys=[quote_currency_id], back_populates="quote_pairs")
     csv_files = relationship("CryptocurrencyCSV", foreign_keys="CryptocurrencyCSV.trading_pair_id", back_populates="trading_pair")
-    ohlcv_data = relationship("OHLCV", foreign_keys="OHLCV.trading_pair_id", back_populates="trading_pair")
+    ohlcv_minute_data = relationship("OHLCVMinute", foreign_keys="OHLCVMinute.trading_pair_id", back_populates="trading_pair")
+    ohlcv_hourly_data = relationship("OHLCVHourly", foreign_keys="OHLCVHourly.trading_pair_id", back_populates="trading_pair")
+    ohlcv_daily_data = relationship("OHLCVDaily", foreign_keys="OHLCVDaily.trading_pair_id", back_populates="trading_pair")
 
     __table_args__ = (
         UniqueConstraint("base_currency_id", "quote_currency_id", name="uniq_trading_pair"),
@@ -117,8 +119,8 @@ class CSVHistoricalData(Base):
                 f"low='{self.low}', close='{self.close}')>")
 
 
-class OHLCV(Base):
-    __tablename__ = "ohlcv"
+class OHLCVMinute(Base):
+    __tablename__ = "ohlcv_minute"
 
     id = Column(Integer, primary_key=True)
     trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
@@ -129,14 +131,62 @@ class OHLCV(Base):
     close = Column(Float, nullable=False)
     volume_quote = Column(Float, nullable=False)
 
-    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_data")
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_minute_data")
 
     __table_args__ = (
         UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
     )
 
     def __repr__(self):
-        return (f"<OHLCV(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+        return (f"<OHLCVMinute(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+                f"date='{self.date}', open='{self.open}', high='{self.high}',"
+                f"low='{self.low}', close='{self.close}', volume='{self.volume})>")
+
+
+class OHLCVHourly(Base):
+    __tablename__ = "ohlcv_hourly"
+
+    id = Column(Integer, primary_key=True)
+    trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
+    date = Column(DateTime, nullable=False)
+    open = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    volume_quote = Column(Float, nullable=False)
+
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_hourly_data")
+
+    __table_args__ = (
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+    )
+
+    def __repr__(self):
+        return (f"<OHLCVHourly(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+                f"date='{self.date}', open='{self.open}', high='{self.high}',"
+                f"low='{self.low}', close='{self.close}', volume='{self.volume})>")
+
+
+class OHLCVDaily(Base):
+    __tablename__ = "ohlcv_daily"
+
+    id = Column(Integer, primary_key=True)
+    trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
+    date = Column(DateTime, nullable=False)
+    open = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    volume_quote = Column(Float, nullable=False)
+
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_daily_data")
+
+    __table_args__ = (
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+    )
+
+    def __repr__(self):
+        return (f"<OHLCVDaily(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
                 f"date='{self.date}', open='{self.open}', high='{self.high}',"
                 f"low='{self.low}', close='{self.close}', volume='{self.volume})>")
 
