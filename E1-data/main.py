@@ -26,7 +26,6 @@ def parse_args():
     parser.add_argument("--aggregate", action="store_true", help="Exécute les étapes d'agrégation")
     parser.add_argument("--initiate_api_user", action="store_true", help="Exécute les étapes d'initialisation de l'utilisateur API")
     parser.add_argument("--all", action="store_true", help="Exécute le pipeline complet")
-    parser.add_argument("--tmp", action="store_true", help="Exécute les étapes temporaires (non implémentées)")
     
     return parser.parse_args()
 
@@ -41,8 +40,7 @@ def main():
                                    args.feed_raw_db,
                                    args.extract_data,
                                    args.aggregate,
-                                   args.initiate_api_user,
-                                   args.tmp
+                                   args.initiate_api_user
                                 ])
 
     logger.info("Démarrage du pipeline ETL")
@@ -67,8 +65,6 @@ def main():
     if args.aggregate or run_all:
         logger.info("Exécute les étapes d'agrégation")
         aggregate_all_ohlcv_by_minute()
-
-    if args.tmp:
         aggregate_all_ohlcv_by_hour_and_day()
 
     # Initialisation de l'utilisateur API
