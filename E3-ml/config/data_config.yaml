@@ -1,8 +1,15 @@
-E1_API_BASE_URL: "http://localhost:8000/api/v1"
-E1_API_LOGIN_URL: "http://localhost:8000/api/v1/login"
-E1_API_OHLCV_URL: "http://localhost:8000/api/v1/ohlcv/ohlcv_by_trading_pair_id"
+E1_API_URLS:
+  E1_API_LOGIN_URL: "http://localhost:8000/api/v1/login"
+  OHLCV_URLS:
+    minute: "http://localhost:8000/api/v1/ohlcv/minute"
+    hourly: "http://localhost:8000/api/v1/ohlcv/hourly"
+    daily: "http://localhost:8000/api/v1/ohlcv/daily"
 
-CSV_DIR_PATH: "data/csv"
+# Granularités de données à récupérer ("minute", "hourly", "daily")
+DATA_GRANULARITIES:
+  - "daily"
+
+RAW_DATA_DIR_PATH: "data/raw_data"
 
 TRADING_PAIRS:
   -
