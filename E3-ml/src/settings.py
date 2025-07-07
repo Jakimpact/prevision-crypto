@@ -24,19 +24,25 @@ def load_yaml_config(filename):
 
 try:
     DATA_CONFIG = load_yaml_config("data_config.yaml")
+    ML_CONFIG = load_yaml_config("ml_config.yaml")
 except FileNotFoundError as e: 
     print(f"Warning: {e}")
 
 
 class DataSettings():
-    E1_API_LOGIN_URL = DATA_CONFIG["E1_API_URLS"]["E1_API_LOGIN_URL"]
-    E1_API_OHLCV_URLS = DATA_CONFIG["E1_API_URLS"]["OHLCV_URLS"]
-    
-    DATA_GRANULARITIES = DATA_CONFIG["DATA_GRANULARITIES"]
+    E1_api_login_url = DATA_CONFIG["E1_api_urls"]["E1_api_login_url"]
+    E1_api_ohlcv_urls = DATA_CONFIG["E1_api_urls"]["ohlcv_urls"]
 
-    RAW_DATA_DIR_PATH = DATA_CONFIG["RAW_DATA_DIR_PATH"]
+    raw_data_dir_path = DATA_CONFIG["raw_data_dir_path"]
 
-    TRADING_PAIRS = DATA_CONFIG["TRADING_PAIRS"]
+    trading_pairs = DATA_CONFIG["trading_pairs"]
+
+
+class MLSettings():
+    trading_pairs = ML_CONFIG["trading_pairs"]
+    date_formats = ML_CONFIG["date_formats"]
+    dates_by_granularity = ML_CONFIG["dates_by_granularity"]
+    models_config = ML_CONFIG["models_config"]
 
 
 class SecretSettings():

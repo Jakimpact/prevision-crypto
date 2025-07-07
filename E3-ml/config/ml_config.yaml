@@ -1,0 +1,47 @@
+# Liste des paires de trading à prévoir avec leurs granularités de données (daily, hourly, minute)
+trading_pairs:
+  - id: 991
+    symbol: "BTC-USD"
+    base_currency: "BTC"
+    quote_currency: "USD"
+    granularities:
+      - type: "daily"
+        model: "xgboost"
+        params:
+          lags: [1, 2, 3, 4, 5]
+          lags_past_covariates: [1, 2, 3, 4, 5]
+          lags_future_covariates: [0]
+          add_encoders:
+            datetime_attribute: {
+              future: ["year", "month", "day", "dayofweek", "hour"]
+            }
+
+date_formats:
+  - type: "daily"
+    format: "%Y-%m-%d"
+  - type: "hourly"
+    format: "%Y-%m-%d %H:%M:%S"
+  - type: "minute"
+    format: "%Y-%m-%d %H:%M:%S"
+
+dates_by_granularity:
+  - type: "daily"
+    training_start: "2020-01-01"
+    training_end: "2023-01-01"
+    test_start: "2023-01-02"
+    test_end: "2023-12-31"
+    forecasting_start: "2024-01-01"
+  - type: "hourly"
+    training_start: "2024-01-01"
+    training_end: "2025-01-01"
+    test_start: "2023-01-02"
+    test_end: "2023-12-31"
+    forecasting_start: "2024-01-01"
+
+models_config:
+  - linear_regression:
+      darts_module: "darts.models.forecasting.linear_regression_model"
+      darts_class: "LinearRegressionModel"
+  - xgboost:
+      darts_module: "darts.models.forecasting.xgboost"
+      darts_class: "XGBModel"

@@ -1,20 +1,16 @@
-E1_API_URLS:
-  E1_API_LOGIN_URL: "http://localhost:8000/api/v1/login"
-  OHLCV_URLS:
+E1_api_urls:
+  E1_api_login_url: "http://localhost:8000/api/v1/login"
+  ohlcv_urls:
     minute: "http://localhost:8000/api/v1/ohlcv/minute"
     hourly: "http://localhost:8000/api/v1/ohlcv/hourly"
     daily: "http://localhost:8000/api/v1/ohlcv/daily"
 
-# Granularités de données à récupérer ("minute", "hourly", "daily")
-DATA_GRANULARITIES:
-  - "daily"
+raw_data_dir_path: "data/raw_data"
 
-RAW_DATA_DIR_PATH: "data/raw_data"
-
-TRADING_PAIRS:
-  -
-    id: 991
+trading_pairs:
+  - id: 991
     symbol: "BTC-USD"
     base_currency: "BTC"
     quote_currency: "USD"
     start_date: "2020-01-01"
+    data_granularities: ["daily"] # Granularités de données à récupérer ("minute", "hourly", "daily")

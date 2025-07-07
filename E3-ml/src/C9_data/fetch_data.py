@@ -15,9 +15,9 @@ def get_data_for_ml():
     if not jwt_token:
         raise Exception("Échec de la récupération du token JWT.")
 
-    for trading_pair in DataSettings.TRADING_PAIRS:
+    for trading_pair in DataSettings.trading_pairs:
 
-        for granularity in DataSettings.DATA_GRANULARITIES:
+        for granularity in trading_pair["data_granularities"]:
             df = fetch_ohlcv(trading_pair["id"], trading_pair["start_date"], granularity, jwt_token)
             save_to_csv(df, trading_pair, granularity)
 
@@ -25,7 +25,7 @@ def get_data_for_ml():
 def get_jwt_token():
     """Récupère un token JWT depuis l'API E1."""
     
-    login_url = DataSettings.E1_API_LOGIN_URL
+    login_url = DataSettings.E1_api_login_url
     login_data = {
         "username": SecretSettings.API_USERNAME,
         "password": SecretSettings.API_PASSWORD
@@ -41,7 +41,7 @@ def get_jwt_token():
 def fetch_ohlcv(trading_pair_id: int, start_date: Optional[str], granularity: str, token: str):
     """Récupère les données OHLCV pour une trading pair et les retourne sous forme de DataFrame."""
     
-    ohlcv_url = DataSettings.E1_API_OHLCV_URLS[granularity] + f"/{trading_pair_id}"
+    ohlcv_url = DataSettings.E1_api_ohlcv_urls[granularity] + f"/{trading_pair_id}"
     headers = {"Authorization": f"Bearer {token}"}
     params = {"start_date": start_date} if start_date else {}
     response = requests.get(ohlcv_url, headers=headers, params=params)
@@ -59,7 +59,7 @@ def save_to_csv(df, trading_pair, granularity):
     """Enregistre les données OHLCV dans un fichier CSV."""
     
     csv_filename = f"ohlcv_{granularity}_{trading_pair['symbol']}.csv"
-    os.makedirs(DataSettings.RAW_DATA_DIR_PATH, exist_ok=True)
-    csv_file_path = DataSettings.RAW_DATA_DIR_PATH + f"/{csv_filename}"
+    os.makedirs(DataSettings.raw_data_dir_path, exist_ok=True)
+    csv_file_path = DataSettings.raw_data_dir_path + f"/{csv_filename}"
     df.to_csv(csv_file_path, index=False)
     print(f"Données OHLCV pour {trading_pair['symbol']} enregistrées dans {csv_file_path}")
