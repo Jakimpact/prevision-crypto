@@ -1,4 +1,7 @@
 darts
 dotenv
+fastapi
 pandas
+passlib[bcrypt]
+python-jose
 PyYAML

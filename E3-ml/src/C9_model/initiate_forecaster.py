@@ -16,8 +16,8 @@ def initialize_trading_pairs_forecasters():
         forecaster = TradingPairForecaster(trading_pair_info)
         forecaster.initialize_granularities(trading_pair_info)
         for granularity in forecaster.granularities:
-            with load_ohlcv_csv(forecaster.symbol, granularity["type"]) as df:
-                granularity["timeseries"] = time_series_transformation_steps(df, granularity["type"], granularity["freq"])
+            df = load_ohlcv_csv(forecaster.symbol, granularity["type"])
+            granularity["timeseries"] = time_series_transformation_steps(df, granularity["type"], granularity["freq"])
 
         trading_pairs_forecasters.append(forecaster)
 
@@ -27,8 +27,8 @@ def initialize_trading_pairs_forecasters():
 def time_series_transformation_steps(df, granularity_type, freq):
     """A partir d'un dataframe, transforme les données en TimeSeries en appliquant différents traitements sur les données."""
 
-    start_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["training_start"], format=MLSettings.date_formats[granularity_type]["format"])
-    end_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["forecasting_start"], format=MLSettings.date_formats[granularity_type]["format"])
+    start_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["training_start"])
+    end_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["forecasting_start"])
 
     df = df[(df.index >= start_date) & (df.index < end_date)]
     df = df.drop(columns=["trading_pair_id"])

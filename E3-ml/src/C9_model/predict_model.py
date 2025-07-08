@@ -1,6 +1,8 @@
+from darts import TimeSeries
 import pandas as pd
 
-from src.settings import logger
+from src.C9_model.train_model import train_model
+from src.settings import logger, MLSettings
 
 
 def make_forecasts(trading_pair_forecasters):
@@ -8,13 +10,14 @@ def make_forecasts(trading_pair_forecasters):
     
     for forecaster in trading_pair_forecasters:
         for granularity in forecaster.granularities:
-            model = granularity["model_instance"]
 
-            predictions = model.predict()
+            forecasting_start = pd.to_datetime(MLSettings.dates_by_granularity[granularity["type"]]["forecasting_start"])
+            forecasting_end = forecasting_start + pd.Timedelta((granularity["test_window"] - 1), unit=granularity["freq"])
+            print(forecasting_start, forecasting_end)
 
-            granularity["predictions"] = predictions
-            logger.info(f"Prévisions effectuées pour {forecaster.base_currency}/{forecaster.quote_currency} à la granularité {granularity['type']}")
-
+            train_model(granularity["model_instance"], granularity["timeseries"], granularity["freq"], training_end=forecasting_start)
+            forecast = make_forecast(granularity["model_instance"], granularity["freq"], forecasting_start, forecasting_end)
+            forecaster.add_forecast_to_df(forecast, granularity, "current_forecast")
 
 
 def make_forecast(model, freq, start, end):

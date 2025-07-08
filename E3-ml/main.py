@@ -48,8 +48,6 @@ def main():
         logger.info("Exécute les étapes d'initialisation des pairs de trading à forecaster")
         trading_pair_forecasters = initialize_trading_pairs_forecasters()
 
-
-
     # Évaluation des modèles
     if any([args.evaluate, args.predict]) or run_all:
         logger.info("Exécute les étapes d'évaluation des modèles")
@@ -59,14 +57,6 @@ def main():
     if args.predict or run_all:
         logger.info("Exécute les étapes de prévision des modèles")
         make_forecasts(trading_pair_forecasters)
-
-
-
-    # Sauvegarde des prévisions
-    if args.predict or run_all:
-        logger.info("Exécute les étapes de sauvegarde des prévisions")
-        #save_forecasts(trading_pair_forecasters)
-        
 
     logger.info("Composants du pipeline sélectionnés terminés avec succès")
 

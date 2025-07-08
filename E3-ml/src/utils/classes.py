@@ -19,12 +19,15 @@ class TradingPairForecaster:
         for granularity in trading_pair_info["granularities"]:
             if granularity["type"] == "daily":
                 freq = "D"
+                test_window = 7
             elif granularity["type"] == "hourly":
-                freq = "H"
+                freq = "h"
+                test_window = 24
 
             self.granularities.append({
                 "type": granularity["type"],
                 "freq": freq,
+                "test_window": test_window,
                 "model_name": granularity["model"],
                 "params": granularity["params"],
                 "model_instance": self.initialize_model(granularity["model"], granularity["params"]),
@@ -39,3 +42,10 @@ class TradingPairForecaster:
         ModelClass = getattr(module, models_config[model_name]["darts_class"])
         model = ModelClass(**params)
         return model
+    
+    def add_forecast_to_df(self, forecast, granularity, forecast_type):
+        """Ajoute une prévision au DataFrame historical_forecast ou current_forecast de la granularité spécifiée."""
+
+        forecast_df = forecast.to_dataframe()
+        forecast_df = forecast_df.rename(columns={forecast_df.columns[0]: "pred"})
+        granularity[forecast_type] = pd.concat([granularity[forecast_type], forecast_df])

@@ -10,7 +10,7 @@ def load_ohlcv_csv(trading_pair_symbol, granularity_type):
 
     try:
         file_path = os.path.join(DataSettings.raw_data_dir_path, f"ohlcv_{granularity_type}_{trading_pair_symbol}.csv")
-        df = pd.read_csv(file_path, sep=";", parse_dates=["date"], index_col="date")
+        df = pd.read_csv(file_path, sep=",", parse_dates=["date"], index_col="date")
         return df
     
     except FileNotFoundError as e:
@@ -20,18 +20,18 @@ def load_ohlcv_csv(trading_pair_symbol, granularity_type):
 def generate_test_periods(granularity_type):
     """Génère des périodes de test pour une granularité donnée."""
 
-    start_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["test_start"], format=MLSettings.date_formats[granularity_type]["format"])
-    end_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["test_end"], format=MLSettings.date_formats[granularity_type]["format"])
+    start_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["test_start"])
+    end_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["test_end"])
 
     if granularity_type == "daily":
         freq = "D"
         test_window = 7
     elif granularity_type == "hourly":
-        freq = "H"
+        freq = "h"
         test_window = 24
 
     periods = []
-    test_starts = pd.date_range(start=start_date, end=end_date-pd.Timedelta(days=test_window, unit=freq), freq=freq)
+    test_starts = pd.date_range(start=start_date, end=end_date-pd.Timedelta(days=test_window, unit=freq), freq=freq) # freq={test_window}{freq} pour des fenêtres non chevauchantes
     for test_start in test_starts:
         test_end = test_start + pd.Timedelta(test_window, unit=freq) - pd.Timedelta(1, unit=freq)
         periods.append({

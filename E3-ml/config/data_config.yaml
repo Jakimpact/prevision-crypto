@@ -1,9 +1,9 @@
 E1_api_urls:
   E1_api_login_url: "http://localhost:8000/api/v1/login"
   ohlcv_urls:
-    minute: "http://localhost:8000/api/v1/ohlcv/minute"
-    hourly: "http://localhost:8000/api/v1/ohlcv/hourly"
-    daily: "http://localhost:8000/api/v1/ohlcv/daily"
+    minute: "http://localhost:8000/api/v1/ohlcv/minute_by_trading_pair_id"
+    hourly: "http://localhost:8000/api/v1/ohlcv/hourly_by_trading_pair_id"
+    daily: "http://localhost:8000/api/v1/ohlcv/daily_by_trading_pair_id"
 
 raw_data_dir_path: "data/raw_data"
 

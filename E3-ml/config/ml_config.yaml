@@ -8,8 +8,8 @@ trading_pairs:
       - type: "daily"
         model: "xgboost"
         params:
-          lags: [1, 2, 3, 4, 5]
-          lags_past_covariates: [1, 2, 3, 4, 5]
+          lags: [-1, -2, -3, -4, -5]
+          #lags_past_covariates: []
           lags_future_covariates: [0]
           add_encoders:
             datetime_attribute: {
@@ -17,31 +17,31 @@ trading_pairs:
             }
 
 date_formats:
-  - type: "daily"
-    format: "%Y-%m-%d"
-  - type: "hourly"
+  daily:
     format: "%Y-%m-%d %H:%M:%S"
-  - type: "minute"
+  hourly:
+    format: "%Y-%m-%d %H:%M:%S"
+  minute:
     format: "%Y-%m-%d %H:%M:%S"
 
 dates_by_granularity:
-  - type: "daily"
+  daily:
     training_start: "2020-01-01"
-    training_end: "2023-01-01"
-    test_start: "2023-01-02"
-    test_end: "2023-12-31"
-    forecasting_start: "2024-01-01"
-  - type: "hourly"
+    training_end: "2024-12-31"
+    test_start: "2025-01-01"
+    test_end: "2025-05-31"
+    forecasting_start: "2025-06-01"
+  hourly:
     training_start: "2024-01-01"
-    training_end: "2025-01-01"
+    training_end: "2024-12-31"
     test_start: "2023-01-02"
     test_end: "2023-12-31"
     forecasting_start: "2024-01-01"
 
 models_config:
-  - linear_regression:
+  linear_regression:
       darts_module: "darts.models.forecasting.linear_regression_model"
       darts_class: "LinearRegressionModel"
-  - xgboost:
+  xgboost:
       darts_module: "darts.models.forecasting.xgboost"
       darts_class: "XGBModel"
