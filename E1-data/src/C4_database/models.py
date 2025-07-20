@@ -134,7 +134,7 @@ class OHLCVMinute(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_minute_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_minute_trading_pair_date"),
     )
 
     def __repr__(self):
@@ -158,7 +158,7 @@ class OHLCVHourly(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_hourly_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_hourly_trading_pair_date"),
     )
 
     def __repr__(self):
@@ -182,7 +182,7 @@ class OHLCVDaily(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_daily_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_daily_trading_pair_date"),
     )
 
     def __repr__(self):

@@ -16,15 +16,18 @@ from src.C4_database.crud import (
     UserCRUD
 )
 from src.C4_database.models import Base
-from src.settings import DatabaseSettings
+from src.settings import DatabaseSettings, SecretSettings
+
+db_username = SecretSettings.DB_USERNAME
+db_password = SecretSettings.DB_PASSWORD
+db_host = SecretSettings.DB_HOST
+db_port = SecretSettings.DB_PORT
+db_name = SecretSettings.DB_NAME
 
 
-db_path = DatabaseSettings.DB_PATH
-db_filename = DatabaseSettings.DB_FILENAME
-
-
-os.makedirs(db_path, exist_ok=True)
-engine = create_engine(f'sqlite:///{db_path}/{db_filename}')
+engine = create_engine(
+    f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
+)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
