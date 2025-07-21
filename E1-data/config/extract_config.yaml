@@ -2,7 +2,6 @@ save_dir:
   cryptodownload: "data/external/cryptodownload"
   coinmarketcap: "data/external/coinmarketcap"
 cryptodownload:
-# Ce sont ces JSON URLS qu'on doit modifier, -> en réalité ajouter de nouveaux, voir si c'est problèmatique d'avor plusieurs liens binance etc
   json_urls:
     binance_h_m: "https://api.cryptodatadownload.com/v1/data/ohlc/binance/guest/spot/available?_=1740047643800&format=json"
     binance_d: "https://api.cryptodatadownload.com/v1/data/ohlc/binance/available?_=1752854076487&format=json"
