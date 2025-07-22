@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 import pandas as pd
@@ -28,3 +28,18 @@ def parse_date(date_str):
         except (ValueError, TypeError):
             continue
     return pd.NaT
+
+
+def datetime_to_milliseconds(dt: datetime):
+    """
+    Convertit un objet datetime en timestamp en millisecondes.
+    """
+    dt = dt.replace(tzinfo=timezone.utc)
+    return int(dt.timestamp() * 1000)
+
+
+def milliseconds_to_datetime(ms: int):
+    """
+    Convertit un timestamp en millisecondes en objet datetime (UTC).
+    """
+    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc)

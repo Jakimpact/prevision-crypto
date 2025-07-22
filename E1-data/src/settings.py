@@ -25,6 +25,7 @@ def load_yaml_config(filename):
 try:
     EXTRACT_CONFIG = load_yaml_config("extract_config.yaml")
     DATABASE_CONFIG = load_yaml_config("database_config.yaml")
+    UPDATE_CONFIG = load_yaml_config("update_config.yaml")
 except FileNotFoundError as e: 
     print(f"Warning: {e}")
 
@@ -53,6 +54,11 @@ class SecretSettings():
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT =os.getenv("DB_PORT")
     DB_NAME = os.getenv("DB_NAME")
+
+
+class UpdateSettings():
+    BINANCE_OHLCV_URL = UPDATE_CONFIG["binance_ohlcv_url"]
+    TRADING_PAIRS = UPDATE_CONFIG["trading_pairs"]
 
 
 class LogSettings():
