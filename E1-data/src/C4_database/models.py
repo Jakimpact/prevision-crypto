@@ -134,7 +134,7 @@ class OHLCVMinute(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_minute_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_minute_trading_pair_date"),
     )
 
     def __repr__(self):
@@ -158,7 +158,7 @@ class OHLCVHourly(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_hourly_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_hourly_trading_pair_date"),
     )
 
     def __repr__(self):
@@ -182,7 +182,7 @@ class OHLCVDaily(Base):
     trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id], back_populates="ohlcv_daily_data")
 
     __table_args__ = (
-        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_trading_pair_date"),
+        UniqueConstraint("trading_pair_id", "date", name="uniq_ohlcv_daily_trading_pair_date"),
     )
 
     def __repr__(self):
@@ -198,6 +198,70 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     password_hashed = Column(String, nullable=False)
     status = Column(String, nullable=False, default="active")
+    role = Column(String, nullable=False, default="user")
 
     def __repr__(self):
-        return f"<User(username='{self.username}', status='{self.status}')>"
+        return f"<User(username='{self.username}', status='{self.status}', role='{self.role}')>"
+    
+
+class ForecastMinute(Base):
+    __tablename__ = "forecast_minute"
+
+    id = Column(Integer, primary_key=True)
+    trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
+    date = Column(DateTime, nullable=False)
+    value = Column(Float, nullable=False)
+    model_name = Column(String, nullable=True)
+    model_version = Column(String, nullable=True)
+
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id])
+
+    __table_args__ = (
+        UniqueConstraint("trading_pair_id", "date", name="uniq_forecast_minute_trading_pair_date"),
+    )
+
+    def __repr__(self):
+        return (f"<ForecastMinute(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+                f"date='{self.date}', value='{self.value}'>")
+    
+
+class ForecastHourly(Base):
+    __tablename__ = "forecast_hourly"
+
+    id = Column(Integer, primary_key=True)
+    trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
+    date = Column(DateTime, nullable=False)
+    value = Column(Float, nullable=False)
+    model_name = Column(String, nullable=True)
+    model_version = Column(String, nullable=True)
+
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id])
+
+    __table_args__ = (
+        UniqueConstraint("trading_pair_id", "date", name="uniq_forecast_hourly_trading_pair_date"),
+    )
+
+    def __repr__(self):
+        return (f"<ForecastHourly(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+                f"date='{self.date}', value='{self.value}'>")
+    
+
+class ForecastDaily(Base):
+    __tablename__ = "forecast_daily"
+
+    id = Column(Integer, primary_key=True)
+    trading_pair_id = Column(Integer, ForeignKey("trading_pairs.id"), nullable=False)
+    date = Column(DateTime, nullable=False)
+    value = Column(Float, nullable=False)
+    model_name = Column(String, nullable=True)
+    model_version = Column(String, nullable=True)
+
+    trading_pair = relationship("TradingPair", foreign_keys=[trading_pair_id])
+
+    __table_args__ = (
+        UniqueConstraint("trading_pair_id", "date", name="uniq_forecast_daily_trading_pair_date"),
+    )
+
+    def __repr__(self):
+        return (f"<ForecastDaily(pair='{self.trading_pair.base_currency.symbol}/{self.trading_pair.quote_currency.symbol}', "
+                f"date='{self.date}', value='{self.value}'>")

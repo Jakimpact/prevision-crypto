@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.C5_api.utils.auth import verify_password, create_access_token
+from src.C5_api.utils.auth import verify_password, create_access_token, get_password_hash
+from src.C5_api.utils.classes import UserRegisterRequest
 from src.C4_database.database import Database
 from src.C5_api.utils.deps import get_db
 
 
-router = APIRouter(tags=["login"]
+router = APIRouter(
+    prefix="/authentification",
+    tags=["login"]
 )
 
 
@@ -23,4 +26,26 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Database = Depen
         )
     access_token = create_access_token(data={"sub": user.username})
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "role": user.role
+    }
+
+
+@router.post("/register")
+def register_user(payload: UserRegisterRequest, db: Database = Depends(get_db)):
+    """Crée un nouvel utilisateur avec le rôle 'user'."""
+    existing_user = db.users.get_by_username(payload.username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
+        )
+    hashed_password = get_password_hash(payload.password)
+    user = db.users.create(
+        username=payload.username,
+        password_hashed=hashed_password,
+        role="user"
+    )
+    return {"id": user.id, "username": user.username, "role": user.role}
