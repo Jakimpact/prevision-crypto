@@ -49,6 +49,7 @@ class SecretSettings():
     API_ALGORITHM = os.getenv("API_ALGORITHM")
     API_USERNAME = os.getenv("API_USERNAME")
     API_PASSWORD = os.getenv("API_PASSWORD")
+    API_ROLE = os.getenv("API_ROLE")
     DB_USERNAME = os.getenv("DB_USERNAME")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_HOST = os.getenv("DB_HOST")
