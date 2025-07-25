@@ -34,3 +34,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+def require_role_script(current_user=Depends(get_current_user)):
+    """
+    Dépendance FastAPI pour vérifier que l'utilisateur a le rôle 'script'.
+    """
+    if getattr(current_user, "role", None) != "script":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation not permitted: script role required",
+        )
+    return current_user

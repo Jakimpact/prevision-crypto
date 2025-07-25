@@ -16,4 +16,5 @@ def create_initial_api_user():
         user = db.users.create(
             username=SecretSettings.API_USERNAME,
             password_hashed=get_password_hash(SecretSettings.API_PASSWORD),
+            role=SecretSettings.API_ROLE,
         )
