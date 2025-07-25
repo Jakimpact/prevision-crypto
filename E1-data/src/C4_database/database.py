@@ -13,7 +13,10 @@ from src.C4_database.crud import (
     OHLCVMinuteCRUD,
     OHLCVHourlyCRUD,
     OHLCVDailyCRUD,
-    UserCRUD
+    UserCRUD,
+    ForecastMinuteCRUD,
+    ForecastHourlyCRUD,
+    ForecastDailyCRUD
 )
 from src.C4_database.models import Base
 from src.settings import DatabaseSettings, SecretSettings
@@ -57,6 +60,9 @@ class Database:
         self.ohlcv_hourly = OHLCVHourlyCRUD(self.session)
         self.ohlcv_daily = OHLCVDailyCRUD(self.session)
         self.users = UserCRUD(self.session)
+        self.forecast_minute = ForecastMinuteCRUD(self.session)
+        self.forecast_hourly = ForecastHourlyCRUD(self.session)
+        self.forecast_daily = ForecastDailyCRUD(self.session)
 
     def __enter__(self):
         return self

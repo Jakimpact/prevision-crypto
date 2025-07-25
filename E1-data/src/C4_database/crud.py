@@ -13,7 +13,10 @@ from src.C4_database.models import (
     OHLCVMinute,
     OHLCVHourly,
     OHLCVDaily,
-    User
+    User,
+    ForecastMinute,
+    ForecastHourly,
+    ForecastDaily
 )
 from src.settings import logger
 from src.utils.functions import validate_date
@@ -66,7 +69,6 @@ class BaseCRUD:
                         failed.append(item)
 
         return sucess_count, failed
-
 
     def get(self, id: int):
         return self.db.query(self.model).get(id)
@@ -214,3 +216,96 @@ class UserCRUD(BaseCRUD):
     def get_by_username(self, username: str):
         """Récupère un utilisateur par son nom d'utilisateur."""
         return self.db.query(self.model).filter(self.model.username == username).first()
+    
+
+class ForecastMinuteCRUD(BaseCRUD):
+    def __init__(self, db: Session):
+        super().__init__(ForecastMinute, db)
+
+    def get_forecast_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
+        """
+        Récupère les données forecast pour une paire de trading.
+        Si start_date est fourni, ne retourne que les données à partir de cette date.
+        Args:
+            trading_pair_id: ID de la paire de trading
+            start_date: Date de début au format 'YYYY-MM-DD' ou 'YYYY-MM-DD HH:MM:SS'
+        """
+        query = self.db.query(self.model).filter(self.model.trading_pair_id == trading_pair_id)
+        
+        if start_date:
+            validated_date = validate_date(start_date)
+            if validated_date:
+                query = query.filter(self.model.date >= validated_date)
+                
+        return query.order_by(self.model.date.asc()).all()
+
+    def get_last_forecast_by_trading_pair(self, trading_pair_id: int):
+        """
+        Récupère la dernière entrée forecast minute pour une paire de trading spécifique.
+        """
+        return (self.db.query(self.model)
+                .filter(self.model.trading_pair_id == trading_pair_id)
+                .order_by(self.model.date.desc())
+                .first())
+
+
+class ForecastHourlyCRUD(BaseCRUD):
+    def __init__(self, db: Session):
+        super().__init__(ForecastHourly, db)
+
+    def get_forecast_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
+        """
+        Récupère les données forecast pour une paire de trading.
+        Si start_date est fourni, ne retourne que les données à partir de cette date.
+        Args:
+            trading_pair_id: ID de la paire de trading
+            start_date: Date de début au format 'YYYY-MM-DD' ou 'YYYY-MM-DD HH:MM:SS'
+        """
+        query = self.db.query(self.model).filter(self.model.trading_pair_id == trading_pair_id)
+        
+        if start_date:
+            validated_date = validate_date(start_date)
+            if validated_date:
+                query = query.filter(self.model.date >= validated_date)
+                
+        return query.order_by(self.model.date.asc()).all()
+
+    def get_last_forecast_by_trading_pair(self, trading_pair_id: int):
+        """
+        Récupère la dernière entrée forecast hourly pour une paire de trading spécifique.
+        """
+        return (self.db.query(self.model)
+                .filter(self.model.trading_pair_id == trading_pair_id)
+                .order_by(self.model.date.desc())
+                .first())
+
+
+class ForecastDailyCRUD(BaseCRUD):
+    def __init__(self, db: Session):
+        super().__init__(ForecastDaily, db)
+
+    def get_forecast_by_trading_pair(self, trading_pair_id: int, start_date: Optional[str] = None):
+        """
+        Récupère les données forecast pour une paire de trading.
+        Si start_date est fourni, ne retourne que les données à partir de cette date.
+        Args:
+            trading_pair_id: ID de la paire de trading
+            start_date: Date de début au format 'YYYY-MM-DD' ou 'YYYY-MM-DD HH:MM:SS'
+        """
+        query = self.db.query(self.model).filter(self.model.trading_pair_id == trading_pair_id)
+        
+        if start_date:
+            validated_date = validate_date(start_date)
+            if validated_date:
+                query = query.filter(self.model.date >= validated_date)
+                
+        return query.order_by(self.model.date.asc()).all()
+
+    def get_last_forecast_by_trading_pair(self, trading_pair_id: int):
+        """
+        Récupère la dernière entrée forecast daily pour une paire de trading spécifique.
+        """
+        return (self.db.query(self.model)
+                .filter(self.model.trading_pair_id == trading_pair_id)
+                .order_by(self.model.date.desc())
+                .first())
