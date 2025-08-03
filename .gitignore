@@ -172,3 +172,4 @@ cython_debug/
 
 E1-data/data/
 E3-ml/data/
+E3-ml/models/

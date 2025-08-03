@@ -25,6 +25,8 @@ def load_yaml_config(filename):
 try:
     DATA_CONFIG = load_yaml_config("data_config.yaml")
     ML_CONFIG = load_yaml_config("ml_config.yaml")
+    HOUR_MODELS_CONFIG = load_yaml_config("hour_models_config.yaml")
+    DAY_MODELS_CONFIG = load_yaml_config("day_models_config.yaml")
 except FileNotFoundError as e: 
     print(f"Warning: {e}")
 
@@ -32,8 +34,12 @@ except FileNotFoundError as e:
 class DataSettings():
     E1_api_login_url = DATA_CONFIG["E1_api_urls"]["E1_api_login_url"]
     E1_api_ohlcv_urls = DATA_CONFIG["E1_api_urls"]["ohlcv_urls"]
+    E1_api_get_all_forecast_urls = DATA_CONFIG["E1_api_urls"]["get_all_forecast_urls"]
+    E1_api_get_last_forecast_urls = DATA_CONFIG["E1_api_urls"]["get_last_forecast_urls"]
+    E1_api_post_forecast_urls = DATA_CONFIG["E1_api_urls"]["post_forecast_urls"]
 
     raw_data_dir_path = DATA_CONFIG["raw_data_dir_path"]
+    models_dir_path = DATA_CONFIG["models_dir_path"]
 
     trading_pairs = DATA_CONFIG["trading_pairs"]
 
@@ -44,6 +50,14 @@ class MLSettings():
     dates_by_granularity = ML_CONFIG["dates_by_granularity"]
     models_config = ML_CONFIG["models_config"]
 
+
+class HourModelsSettings():
+    pair_models = HOUR_MODELS_CONFIG["pair_models"]
+
+
+class DayModelsSettings():
+    pair_models = DAY_MODELS_CONFIG["pair_models"]
+    
 
 class SecretSettings():
     API_USERNAME = os.getenv("API_USERNAME")

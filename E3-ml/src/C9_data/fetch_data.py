@@ -4,7 +4,31 @@ from typing import Optional
 
 import pandas as pd
 
-from src.settings import DataSettings, SecretSettings
+from src.settings import DataSettings
+from src.utils.functions import get_jwt_token
+
+
+def get_data_for_pair_forecaster(forecaster):
+    """Récupère les données OHLCV pour une pair de trading et une granularité spécifique."""
+    
+    # Récupération du token JWT pour l'authentification auprès de l'API E1
+    jwt_token = get_jwt_token()
+    if not jwt_token:
+        raise Exception("Échec de la récupération du token JWT.")
+
+    df = fetch_ohlcv(forecaster.trading_pair_id, forecaster.granularity_type, jwt_token)
+    return df
+
+
+def get_last_forecast_for_pair_forecaster(forecaster):
+    """Récupère la dernière prévision pour une pair de trading et une granularité spécifique."""
+    
+    jwt_token = get_jwt_token()
+    if not jwt_token:
+        raise Exception("Échec de la récupération du token JWT.")
+    
+    last_forecast = fetch_last_forecast(forecaster.trading_pair_id, forecaster.granularity_type, jwt_token)
+    return last_forecast
 
 
 def get_data_for_ml():
@@ -22,23 +46,7 @@ def get_data_for_ml():
             save_to_csv(df, trading_pair, granularity)
 
 
-def get_jwt_token():
-    """Récupère un token JWT depuis l'API E1."""
-    
-    login_url = DataSettings.E1_api_login_url
-    login_data = {
-        "username": SecretSettings.API_USERNAME,
-        "password": SecretSettings.API_PASSWORD
-    }
-
-    response = requests.post(login_url, data=login_data)
-    if response.status_code == 200:
-        return response.json()["access_token"]
-    else:
-        raise Exception(f"Échec de la récupération du token JWT: {response.status_code} - {response.text}")
-
-
-def fetch_ohlcv(trading_pair_id: int, start_date: Optional[str], granularity: str, token: str):
+def fetch_ohlcv(trading_pair_id: int, granularity: str, token: str, start_date: Optional[str]=None):
     """Récupère les données OHLCV pour une trading pair et les retourne sous forme de DataFrame."""
     
     ohlcv_url = DataSettings.E1_api_ohlcv_urls[granularity] + f"/{trading_pair_id}"
@@ -53,6 +61,24 @@ def fetch_ohlcv(trading_pair_id: int, start_date: Optional[str], granularity: st
         return df
     else:
         raise Exception(f"Échec de la récupération des données OHLCV: {response.status_code} - {response.text}")
+
+
+def fetch_last_forecast(trading_pair_id: int, granularity: str, token: str):
+    """Récupère la dernière prévision pour une trading pair et retourne un DataFrame."""
+    
+    last_forecast_url = DataSettings.E1_api_get_last_forecast_urls[granularity] + f"/{trading_pair_id}"
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    response = requests.get(last_forecast_url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        if data is None:
+            return None
+        df = pd.DataFrame(data)
+        df["date"] = pd.to_datetime(df["date"])
+        return df
+    else:
+        raise Exception(f"Échec de la récupération de la dernière prévision: {response.status_code} - {response.text}")
 
 
 def save_to_csv(df, trading_pair, granularity):

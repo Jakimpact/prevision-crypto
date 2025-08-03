@@ -8,7 +8,7 @@ sys.path.append(str(ROOT_DIR))
 from src.C9_data.fetch_data import get_data_for_ml
 from src.C9_model.evaluate_model import test_past_performances
 from src.C9_model.initiate_forecaster import initialize_trading_pairs_forecasters
-from src.C9_model.predict_model import make_forecasts
+from src.C9_model.predict_model import make_forecasts_v0
 from src.settings import logger
 
 
@@ -56,7 +56,7 @@ def main():
     # Prévisions des modèles
     if args.predict or run_all:
         logger.info("Exécute les étapes de prévision des modèles")
-        make_forecasts(trading_pair_forecasters)
+        make_forecasts_v0(trading_pair_forecasters)
 
     logger.info("Composants du pipeline sélectionnés terminés avec succès")
 

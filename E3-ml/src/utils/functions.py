@@ -1,8 +1,25 @@
 import os
+import requests
 
 import pandas as pd
 
-from src.settings import DataSettings, MLSettings
+from src.settings import DataSettings, MLSettings, SecretSettings
+
+
+def get_jwt_token():
+    """Récupère un token JWT depuis l'API E1."""
+    
+    login_url = DataSettings.E1_api_login_url
+    login_data = {
+        "username": SecretSettings.API_USERNAME,
+        "password": SecretSettings.API_PASSWORD
+    }
+
+    response = requests.post(login_url, data=login_data)
+    if response.status_code == 200:
+        return response.json()["access_token"]
+    else:
+        raise Exception(f"Échec de la récupération du token JWT: {response.status_code} - {response.text}")
 
 
 def load_ohlcv_csv(trading_pair_symbol, granularity_type):

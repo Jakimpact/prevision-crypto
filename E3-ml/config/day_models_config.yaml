@@ -1,0 +1,29 @@
+pair_models:
+  - id: 124
+    symbol: "BTC-USDT"
+    base_currency: "BTC"
+    quote_currency: "USDT"
+    granularity_type: "daily"
+    model: "xgboost"
+    params:
+      lags: [-1, -2, -3, -4, -5, -6, -7]
+      #lags_past_covariates: []
+      lags_future_covariates: [0]
+      add_encoders:
+        datetime_attribute: {
+          future: ["year", "month", "day", "dayofweek", "hour"]
+        }
+  - id: 245
+    symbol: "ETH-USDT"
+    base_currency: "ETH"
+    quote_currency: "USDT"
+    granularity_type: "daily"
+    model: "xgboost"
+    params:
+      lags: [-1, -2, -3, -4, -5, -6, -7]
+      #lags_past_covariates: []
+      lags_future_covariates: [0]
+      add_encoders:
+        datetime_attribute: {
+          future: ["year", "month", "day", "dayofweek", "hour"]
+        }
