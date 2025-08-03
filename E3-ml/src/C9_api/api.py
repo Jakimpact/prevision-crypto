@@ -18,6 +18,7 @@ app = FastAPI(
 )
 
 app.include_router(login.router, prefix="/api/v1")
+app.include_router(forecast.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

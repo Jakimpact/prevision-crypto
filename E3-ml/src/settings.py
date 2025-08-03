@@ -63,7 +63,7 @@ class SecretSettings():
     API_USERNAME = os.getenv("API_USERNAME")
     API_PASSWORD = os.getenv("API_PASSWORD")
     SECRET_KEY = os.getenv("SECRET_KEY")
-    API_E3_ALGORITHM = os.getenv("API_ALGORITHM")
+    API_E3_ALGORITHM = os.getenv("API_E3_ALGORITHM")
     API_E3_USERNAME = os.getenv("API_E3_USERNAME")
     API_E3_PASSWORD = os.getenv("API_E3_PASSWORD")
 
