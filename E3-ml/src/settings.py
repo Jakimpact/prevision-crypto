@@ -38,6 +38,9 @@ class DataSettings():
     E1_api_get_last_forecast_urls = DATA_CONFIG["E1_api_urls"]["get_last_forecast_urls"]
     E1_api_post_forecast_urls = DATA_CONFIG["E1_api_urls"]["post_forecast_urls"]
 
+    E3_api_login_url = DATA_CONFIG["E3_api_urls"]["E3_api_login_url"]
+    E3_api_post_forecast_urls = DATA_CONFIG["E3_api_urls"]["post_forecast_urls"]
+
     raw_data_dir_path = DATA_CONFIG["raw_data_dir_path"]
     models_dir_path = DATA_CONFIG["models_dir_path"]
 

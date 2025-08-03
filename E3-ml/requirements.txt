@@ -6,4 +6,5 @@ passlib[bcrypt]
 python-jose
 PyYAML
 requests
+streamlit
 uvicorn

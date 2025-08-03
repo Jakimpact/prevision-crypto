@@ -17,6 +17,12 @@ E1_api_urls:
     hourly: "http://localhost:8000/api/v1/forecast/hourly"
     daily: "http://localhost:8000/api/v1/forecast/daily"
 
+E3_api_urls:
+  E3_api_login_url: "http://localhost:8005/api/v1/authentification/login"
+  post_forecast_urls:
+    hourly: "http://localhost:8005/api/v1/forecast/forecast_hourly"
+    daily: "http://localhost:8005/api/v1/forecast/forecast_daily"
+
 raw_data_dir_path: "data/raw_data"
 models_dir_path: "models"
 

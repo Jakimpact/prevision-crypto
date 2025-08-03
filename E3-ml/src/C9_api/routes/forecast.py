@@ -28,7 +28,8 @@ def make_forecast_hourly(payload: ForecastPairRequest=Body(...), current_user=De
     return {
         "trading_pair_symbol": payload.trading_pair_symbol,
         "num_pred": payload.num_pred,
-        "forecast": forecast.values().flatten().tolist()
+        "forecast": forecast.values().flatten().tolist(),
+        "forecast_dates": [str(dt) for dt in forecast.time_index]
     }
 
 
@@ -49,5 +50,6 @@ def make_forecast_daily(payload: ForecastPairRequest=Body(...), current_user=Dep
     return {
         "trading_pair_symbol": payload.trading_pair_symbol,
         "num_pred": payload.num_pred,
-        "forecast": forecast.values().flatten().tolist()
+        "forecast": forecast.values().flatten().tolist(),
+        "forecast_dates": [str(dt) for dt in forecast.time_index]
     }
