@@ -74,7 +74,10 @@ def fetch_last_forecast(trading_pair_id: int, granularity: str, token: str):
         data = response.json()
         if data is None:
             return None
-        df = pd.DataFrame(data)
+        if isinstance(data, dict):
+            df = pd.DataFrame([data])
+        else:
+            df = pd.DataFrame(data)
         df["date"] = pd.to_datetime(df["date"])
         return df
     else:

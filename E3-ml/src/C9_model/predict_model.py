@@ -23,8 +23,8 @@ def make_forecasts(pair_forecasters):
         
         # Si une prévision existe, on va continuer à faire des prévisions jusqu'à la date de la dernière donnée historique
         else:
-            last_forecast_date = last_forecast.date
-
+            last_forecast_date = last_forecast.date.iloc[0]
+            
             while last_forecast_date <= last_historical_date:
 
                 train_model(forecaster.model_instance, forecaster.ts_historical_data, 
