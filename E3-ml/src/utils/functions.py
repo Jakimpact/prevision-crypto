@@ -34,7 +34,28 @@ def load_ohlcv_csv(trading_pair_symbol, granularity_type):
         raise FileNotFoundError(f"Le fichier {file_path} n'a pas été trouvé (erreur : {e}).")
     
 
-def generate_test_periods(granularity_type):
+def generate_test_periods(forecaster):
+    """Génère des périodes de test pour un forecaster."""
+
+    last_date = forecaster.df_historical_data.index.max()
+    start_date = last_date - forecaster.test_period_duration
+
+    start_date = max(start_date, forecaster.df_historical_data.index.min())
+    end_date = last_date
+
+    periods = []
+    test_starts = pd.date_range(start=start_date, end=end_date-pd.Timedelta(days=forecaster.test_window, unit=forecaster.freq), freq=forecaster.freq) # freq={test_window}{freq} pour des fenêtres non chevauchantes
+    for test_start in test_starts:
+        test_end = test_start + pd.Timedelta(forecaster.test_window, unit=forecaster.freq) - pd.Timedelta(1, unit=forecaster.freq)
+        periods.append({
+            "test_start": test_start,
+            "test_end": test_end
+        })
+
+    return pd.DataFrame(periods)
+
+
+def generate_test_periods_v0(granularity_type):
     """Génère des périodes de test pour une granularité donnée."""
 
     start_date = pd.to_datetime(MLSettings.dates_by_granularity[granularity_type]["test_start"])

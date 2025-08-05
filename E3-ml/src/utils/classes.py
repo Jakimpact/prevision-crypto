@@ -21,9 +21,13 @@ class TradingPairForecaster:
         if self.granularity_type == "daily":
             self.freq = "D"
             self.test_window = 7
+            self.test_period_duration = pd.DateOffset(months=6)
+            self.test_period_duration_unit = "months"
         elif self.granularity_type == "hourly":
             self.freq = "h"
             self.test_window = 24
+            self.test_period_duration = pd.DateOffset(months=1)
+            self.test_period_duration_unit = "months"
     
     def initialize_model(self, model_name, params, models_config=MLSettings.models_config):
         """Instancie un modèle (import et création d'objet), à partir des informations du modèles et des paramètres."""

@@ -9,6 +9,7 @@ from src.C9_data.send_data import save_forecasts_to_db
 from src.C9_model.initiate_forecaster import initialize_pair_forecasters_by_granularity
 from src.C9_model.predict_model import make_forecasts
 from src.C9_model.save_model import save_forecasters_models
+from src.C11_monitoring.monitor_training import monitor_trainings
 from src.settings import logger
 
 
@@ -29,6 +30,9 @@ def main():
 
     logger.info("Exécute l'étape d'initialisation des forecasters")
     pair_forecasters = initialize_pair_forecasters_by_granularity(args.granularity)
+
+    logger.info("Exécute l'étape d'évaluation et monitoring des performances à l'entrainement des modèles")
+    monitor_trainings(pair_forecasters, args.granularity)
 
     logger.info("Exécute l'étape d'entrainement et de prévision des modèles")
     make_forecasts(pair_forecasters)

@@ -45,3 +45,5 @@ models_config:
   xgboost:
       darts_module: "darts.models.forecasting.xgboost"
       darts_class: "XGBModel"
+
+mlflow_tracking_uri: "http://localhost:5000"

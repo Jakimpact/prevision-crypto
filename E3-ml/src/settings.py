@@ -53,6 +53,8 @@ class MLSettings():
     dates_by_granularity = ML_CONFIG["dates_by_granularity"]
     models_config = ML_CONFIG["models_config"]
 
+    ml_flow_tracking_uri = ML_CONFIG["mlflow_tracking_uri"]
+
 
 class HourModelsSettings():
     pair_models = HOUR_MODELS_CONFIG["pair_models"]

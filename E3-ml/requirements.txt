@@ -1,6 +1,7 @@
 darts
 dotenv
 fastapi
+mlflow
 pandas
 passlib[bcrypt]
 python-jose
