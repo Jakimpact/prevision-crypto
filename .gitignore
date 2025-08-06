@@ -170,4 +170,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-data/
+E1-data/data/
+E3-ml/data/
+E3-ml/models/
+E3-ml/mlruns/
