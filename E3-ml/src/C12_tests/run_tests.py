@@ -6,7 +6,7 @@ import sys
 import os
 from pathlib import Path
 
-def run_tests(target_path=None):
+def run_tests(target_path=None, domain=None):
     """Lance les tests avec pytest"""
     
     test_dir = Path(__file__).parent
@@ -25,7 +25,10 @@ def run_tests(target_path=None):
         print("Lancement de tous les tests...")
     else:
         target = str(target_path)
-        print(f"Lancement des tests : {target_path.name}")
+        if domain:
+            print(f"Lancement des tests {domain} : {target_path.name}")
+        else:
+            print(f"Lancement des tests : {target_path.name}")
     
     # Commande pytest simplifiée
     cmd = [sys.executable, "-m", "pytest", target, "-v"]
@@ -42,13 +45,34 @@ def run_tests(target_path=None):
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Lance les tests de l'API")
-    parser.add_argument(
+    parser = argparse.ArgumentParser(description="Lance les tests du projet E3-ml")
+    
+    # Sélection par domaine
+    domain_group = parser.add_mutually_exclusive_group()
+    domain_group.add_argument(
+        "--api", 
+        action="store_true",
+        help="Lance uniquement les tests de l'API FastAPI"
+    )
+    domain_group.add_argument(
+        "--app", 
+        action="store_true",
+        help="Lance uniquement les tests de l'application Streamlit"
+    )
+    domain_group.add_argument(
+        "--ml", 
+        action="store_true",
+        help="Lance uniquement les tests du pipeline ML"
+    )
+    
+    # Sélection par type
+    type_group = parser.add_mutually_exclusive_group()
+    type_group.add_argument(
         "--unit", 
         action="store_true",
         help="Lance uniquement les tests unitaires"
     )
-    parser.add_argument(
+    type_group.add_argument(
         "--integration", 
         action="store_true",
         help="Lance uniquement les tests d'intégration"
@@ -58,18 +82,56 @@ if __name__ == "__main__":
     
     test_dir = Path(__file__).parent
     
-    if args.unit:
-        target_path = test_dir / "unit"
-        exit_code = run_tests(target_path)
-    elif args.integration:
-        target_path = test_dir / "integration"
-        exit_code = run_tests(target_path)
+    # Détermination du domaine
+    if args.api:
+        domain_path = test_dir / "api"
+        domain_name = "API"
+    elif args.app:
+        domain_path = test_dir / "app"
+        domain_name = "Application Streamlit"
+    elif args.ml:
+        domain_path = test_dir / "ml"
+        domain_name = "Pipeline ML"
     else:
-        exit_code = run_tests()  # Tous les tests
+        domain_path = test_dir
+        domain_name = None
+    
+    # Détermination du type
+    if args.unit:
+        if domain_name:
+            target_path = domain_path / "unit"
+        else:
+            # Tous les tests unitaires de tous les domaines
+            target_path = test_dir
+            cmd_extra = ["-m", "unit"]
+        type_name = "unitaires"
+    elif args.integration:
+        if domain_name:
+            target_path = domain_path / "integration"
+        else:
+            # Tous les tests d'intégration de tous les domaines
+            target_path = test_dir
+            cmd_extra = ["-m", "integration"]
+        type_name = "d'intégration"
+    else:
+        target_path = domain_path
+        type_name = None
+    
+    # Affichage du type de tests lancés
+    if domain_name and type_name:
+        print(f"=== Tests {type_name} - {domain_name} ===")
+    elif domain_name:
+        print(f"=== Tous les tests - {domain_name} ===")
+    elif type_name:
+        print(f"=== Tests {type_name} - Tous domaines ===")
+    else:
+        print("=== Tous les tests ===")
+    
+    exit_code = run_tests(target_path, domain_name)
     
     if exit_code == 0:
-        print("Tous les tests ont réussi!")
+        print("✅ Tous les tests ont réussi!")
     else:
-        print("Certains tests ont échoué")
+        print("❌ Certains tests ont échoué")
     
     sys.exit(exit_code)
