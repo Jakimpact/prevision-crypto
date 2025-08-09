@@ -35,7 +35,31 @@ def aggregate_all_ohlcv():
 
 
 def aggregate_ohlcv_data(ohlcv_data, trading_pair, timeframe):
-    "Agrège les données OHLCV de la table CSVHistoricalData d'une paire de trading spécifique."
+    """Agrège et normalise les enregistrements OHLCV bruts (provenant de CSVHistoricalData) pour une paire & un timeframe.
+
+    Objectif
+    --------
+    Consolider plusieurs lignes brutes (potentiellement multiples sur une même date pour une paire) en une seule observation
+    normalisée par (trading_pair_id, date) prête à être stockée dans la table OHLCV correspondant au timeframe (minute/hour/day).
+
+    Entrées
+    -------
+    ohlcv_data : Iterable[ORM OHLCV CSVHistoricalData]
+        Collection d'objets issus de la couche C2_query (déjà filtrés par paire & timeframe).
+    trading_pair : ORM TradingPair
+        Objet paire contenant les métadonnées (id, base / quote currencies).
+    timeframe : str
+        Granularité ciblée (ex: "day", "hour", "2023 minute").
+
+    Sortie
+    ------
+    pandas.DataFrame
+        Colonnes: [trading_pair_id, date, open, close, volume_quote, high, low].
+        - open / close : moyennes pondérées par le volume_quote lorsque volume_quote > 0, sinon moyenne simple.
+        - volume_quote : somme des volumes agrégés.
+        - high / low : extrêmes (max/min) des valeurs intrajournalières / intra-horaires agrégées.
+        Retourne None en cas d'erreur et journalise l'exception.
+    """
 
     try:
         records = [(data.date, data.open, data.high, data.low, data.close, data.volume_quote)
@@ -75,6 +99,7 @@ def aggregate_ohlcv_data(ohlcv_data, trading_pair, timeframe):
 
     except Exception as e:
         logger.error(
-            f"Erreur lors de l'agrégation des données OHLCV pour la paire {trading_pair.base_currency.symbol}/{trading_pair.quote_currency.symbol} et le timeframe {timeframe}: {e}"
+            f"Erreur lors de l'agrégation des données OHLCV pour la paire "
+            f"{trading_pair.base_currency.symbol}/{trading_pair.quote_currency.symbol} et le timeframe {timeframe}: {e}"
         )
         return None
