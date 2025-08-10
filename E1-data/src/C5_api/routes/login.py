@@ -15,7 +15,11 @@ router = APIRouter(
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Database = Depends(get_db)):
-    """Authentifie un utilisateur et génère un token d'accès JWT."""
+    """Authentifie et renvoie un token JWT.
+    Args:
+        form_data: Formulaire OAuth2 (username, password).
+    Returns:
+        Dict: {access_token, token_type, role}."""
 
     user = db.users.get_by_username(form_data.username)
     if not user or not verify_password(form_data.password, user.password_hashed):
@@ -35,7 +39,11 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Database = Depen
 
 @router.post("/register")
 def register_user(payload: UserRegisterRequest, db: Database = Depends(get_db)):
-    """Crée un nouvel utilisateur avec le rôle 'user'."""
+    """Inscription d'un utilisateur.
+    Args:
+        payload: username + password.
+    Returns:
+        Dict: {id, username, role}."""
     existing_user = db.users.get_by_username(payload.username)
     if existing_user:
         raise HTTPException(

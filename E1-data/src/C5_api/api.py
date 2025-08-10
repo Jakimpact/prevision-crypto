@@ -29,5 +29,5 @@ if __name__ == "__main__":
         "src.C5_api.api:app",
         host="0.0.0.0",
         port=8000,
-        reload=True  # EN DEV -> Paramètre pour recharger automatiquement le serveur lors des modifications du code
+        reload=False
     )
