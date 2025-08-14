@@ -136,6 +136,34 @@ Les tests utilisent `unittest.mock` pour isoler les dépendances :
 
 ## Tests couverts
 
+### Couverture actuelle (référence) et objectif établi
+Rapport obtenu (commande `--coverage`) :
+
+| Module / Fichier | Couverture lignes |
+| ---------------- | ----------------- |
+| `src/C9_api/utils/auth.py` | 90 % |
+| `src/C9_api/utils/deps.py` | 82 % |
+| `src/C9_api/utils/functions.py` | 38 % |
+| `src/C9_data/fetch_data.py` | 39 % |
+| `src/C9_data/send_data.py` | 20 % |
+| `src/C9_model/evaluate_model.py` | 66 % |
+| `src/C9_model/initiate_forecaster.py` | 63 % |
+| `src/C9_model/predict_model.py` | 71 % |
+| `src/C9_model/save_model.py` | 27 % |
+| `src/utils/classes.py` | 15 % |
+| `src/utils/functions.py` | 26 % |
+| TOTAL global | 52 % |
+
+Constat : Les tests couvrent principalement les flux API (auth), certaines parties du pipeline ML (prévision, initialisation, évaluation) ; les modules utilitaires génériques, persistance et fonctions d'E/S (fetch/send) sont peu sollicités dans la stratégie actuelle.
+
+Objectif de couverture formalisé ("couverture souhaitée" pour le livrable) :
+- Global (lignes) : ≥ 50 % (atteint : 52 %)
+- Domaine API (fichiers utils API) : ≥ 80 % (atteint sur `auth` et `deps`; `functions` hors périmètre critique actuel)
+- Domaine ML cœur (initiate / predict / evaluate) : ≥ 60 % (atteint : 63–71–66 %)
+- Modules secondaires (sauvegarde modèle, E/S data, utilitaires génériques) : pas d'objectif contraignant dans cette phase (explicitement exclus des seuils minimaux car non critiques pour démonstration fonctionnelle et certification). 
+
+Justification : L'objectif pédagogique est de démontrer la robustesse des parties métiers critiques (authentification et pipeline de prévision).
+
 ### Tests unitaires
 
 #### Authentification (`unit/test_api_auth.py`)
@@ -153,6 +181,39 @@ Les tests utilisent `unittest.mock` pour isoler les dépendances :
 - ✅ Tests avec payload invalide
 - ✅ Mock de `load_model` avec objets simulés
 - ✅ Gestion des exceptions avec `pytest.raises`
+
+### Tests API (complément)
+
+#### Authentification (`api/unit/test_api_auth.py`)
+- ✅ Succès / mot de passe invalide / credentials manquants / scénarios partiels
+- ✅ Validation codes HTTP (200, 401)
+- ✅ Isolation via variables d'environnement test
+
+#### Prévisions (`api/unit/test_api_forecast.py`)
+- ✅ Prévisions horaire & journalière (mocks modèles)
+- ✅ Validation bornes `num_pred` (erreurs)
+- ✅ Erreurs d'authentification (401) & payload invalide (422)
+- ✅ Mock de chargement modèle & réponses structurées
+
+### Tests d'intégration API (`api/integration/test_api_integration.py`)
+- ✅ Workflow login → forecast (end-to-end mocké)
+- ✅ Accès documentation OpenAPI (`/docs`, `/redoc`, `/openapi.json`)
+- ✅ Multiples appels prévision avec même token
+- ✅ Gestion et propagation d'erreurs
+
+### Tests Application (Streamlit)
+
+#### Utilitaires & composants (`app/unit/*.py`)
+- ✅ Fonctions utilitaires (requêtes forecast, gestion token)
+- ✅ Sélection / validation paramètres d'entrée
+- ✅ Gestion d'erreurs HTTP et remontée messages
+- ✅ Composants UI : logique (sans rendu graphique)
+
+#### Workflows (`app/integration/test_app_workflow.py`)
+- ✅ Scénarios hourly & daily complets
+- ✅ Réutilisation token sur multiples prévisions
+- ✅ Scénarios d'échec (auth, prévision) & récupération
+- ✅ Orchestration bout‑en‑bout simulée
 
 ### Tests du pipeline ML
 

@@ -161,8 +161,8 @@ class TestModelInitialization:
         
         mock_hour_settings, mock_day_settings = mock_settings
         
-        # Test avec granularité invalide - doit lever UnboundLocalError car pair_models n'est pas défini
-        with pytest.raises(UnboundLocalError, match="local variable 'pair_models' referenced before assignment"):
+        # Test avec granularité invalide - vérifie que l'exception est bien levée (message uniformisé)
+        with pytest.raises(UnboundLocalError, match=r"local variable 'pair_models' referenced before assignment"):
             initialize_pair_forecasters_by_granularity("invalid")
 
     @patch('src.C9_model.initiate_forecaster.get_data_for_pair_forecaster')

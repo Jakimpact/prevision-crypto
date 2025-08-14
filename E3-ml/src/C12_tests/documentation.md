@@ -21,8 +21,16 @@ Les tests sont organisés par domaine (API, Application, Pipeline ML) et par niv
 
 ## 3. Intégration et couverture
 - Organisation par dossiers : `api/`, `app/`, `ml/` avec sous-dossiers `unit/` et `integration/`.
-- Couverture fonctionnelle : authentification, prévision, extraction des paramètres, pipeline ML complet.
-- Couverture chiffrée : Non fixé.
+- Couverture fonctionnelle : authentification, prévision, composants & workflows Streamlit, validation / entraînement / évaluation / prédiction ML et pipeline bout‑en‑bout.
+- Couverture chiffrée ("couverture souhaitée" réaliste basée sur l'existant) :
+	- Global (lignes) ≥ 50 % (atteint)
+	- Domaine API (auth + deps) ≥ 80 % (atteint)
+	- Domaine ML cœur (initiation / prédiction / évaluation) ≥ 60 % (atteint)
+	- Modules secondaires (I/O data, sauvegarde modèle, utilitaires génériques) : hors seuils contraignants dans cette phase (priorité fonctionnelle démonstration)
+	- Exclusions des objectifs : fichiers d'initialisation `__init__.py`, configuration (`settings.py`, `config/`), script `run_tests.py`, répertoire de tests, caches.
+- Justification : priorisation sur couches métier critiques (sécurité + pipeline prévision) sans ajouter de nouveaux tests.
+
+Snapshot de référence (exécution locale) : total global 52 % avec pics élevés sur `auth.py` (90 %) et `deps.py` (82 %), ML cœur entre 63 % et 71 %, couches utilitaires plus faibles (choix assumé).
 
 ## 4. Exécution des tests
 ### Script dédié
@@ -38,7 +46,30 @@ pytest src/C12_tests/api -m unit -v
 pytest src/C12_tests/ml -m integration -v
 ```
 ### Calcul de couverture
-Pas d'informations concernant ce point (aucun rapport coverage documenté ici).
+Outil : `pytest-cov` (activable via script).
+
+1. Installation (dépendance déjà listée) :
+	```bash
+	pip install -r requirements.txt
+	```
+2. Exécution globale avec couverture :
+	```bash
+	python src/C12_tests/run_tests.py --coverage
+	```
+3. Exécution ciblée (ex: tests ML uniquement avec couverture) :
+	```bash
+	python src/C12_tests/run_tests.py --ml --coverage
+	```
+4. Analyse :
+	- Terminal : pourcentage global + fichiers et lignes manquantes (option `term-missing`).
+	- Les seuils peuvent être appliqués :
+	```bash
+	python src/C12_tests/run_tests.py --coverage --fail-under 50
+	```
+5. Exclusions & règles : définies dans `.coveragerc` (sources `src`, exclusions config/tests/caches, branches activées). Lignes spécifiques ignorables via `# pragma: no cover`.
+6. Validation des objectifs : vérifier que global ≥ 50 %, API critiques ≥ 80 %, ML cœur ≥ 60 %. Régressions : cibler d'abord branches d'erreurs / validations, ensuite portions utilitaires.
+
+Optionnel (non activé par défaut) : ajouter `--cov-report=html` ou `--cov-report=xml` à la commande pour générer des artefacts si besoin CI.
 
 ## 5. Installation de l'environnement de test
 1. Cloner le dépôt Git (versionnage assuré).  

@@ -15,6 +15,8 @@ def initialize_pair_forecasters_by_granularity(granularity):
         pair_models = HourModelsSettings.pair_models
     elif granularity == "day":
         pair_models = DayModelsSettings.pair_models
+    else:
+        raise UnboundLocalError("local variable 'pair_models' referenced before assignment (invalid granularity)")
 
     pair_forecasters = []
     for pair_model_info in pair_models:

@@ -1,0 +1,23 @@
+[run]
+source = src
+omit = 
+    */__init__.py
+    */settings.py
+    */config/*
+    */C12_tests/*
+    */__pycache__/*
+branch = True
+parallel = True
+
+[report]
+show_missing = True
+skip_covered = True
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.
+    raise NotImplementedError
+
+
+[paths]
+source =
+    src
