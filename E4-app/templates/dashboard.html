@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Prévision Crypto{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('logout') }}" class="nav-link">Se déconnecter</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header utilisateur -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: between; align-items: center;">
+            <div>
+                <h1 style="color: var(--primary); margin-bottom: 0.5rem;">
+                    Bienvenue {{ user.username }} !
+                </h1>
+                <p style="color: #666; margin: 0;">
+                    Dernière connexion : {{ user.last_login }}
+                </p>
+            </div>
+            <div>
+                <a href="/ui/" class="btn btn-primary">
+                    Voir les graphiques
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message d'information -->
+    <div style="background: rgba(14, 59, 44, 0.05); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">
+            🚧 Dashboard en développement
+        </h3>
+        <p style="color: var(--text-dark); margin-bottom: 1rem;">
+            Cette page sera prochainement enrichie avec :
+        </p>
+        <ul style="color: var(--text-dark); line-height: 1.8;">
+            <li>Aperçu des prévisions crypto en temps réel</li>
+            <li>Graphiques interactifs (accessible via le bouton ci-dessus)</li>
+            <li>Données OHLCV live</li>
+            <li>Prédictions IA personnalisées</li>
+        </ul>
+    </div>
+
+    <!-- Accès rapide -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <div class="card">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">
+                Interface Graphique
+            </h3>
+            <p style="margin-bottom: 1.5rem; color: #666;">
+                Accédez aux graphiques interactifs et aux analyses détaillées.
+            </p>
+            <a href="/ui/" class="btn btn-primary btn-full">
+                Ouvrir Dash
+            </a>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">
+                Mon Compte
+            </h3>
+            <p style="margin-bottom: 1.5rem; color: #666;">
+                Gérez vos préférences et paramètres de compte.
+            </p>
+            <button class="btn btn-secondary btn-full" disabled>
+                Bientôt disponible
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">
+                API Access
+            </h3>
+            <p style="margin-bottom: 1.5rem; color: #666;">
+                Documentation et clés d'accès aux APIs.
+            </p>
+            <button class="btn btn-secondary btn-full" disabled>
+                Bientôt disponible
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles spécifiques au dashboard */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Grid responsive */
+@media (max-width: 768px) {
+    .card div[style*="display: flex"] {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}
