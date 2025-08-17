@@ -7,7 +7,9 @@ import requests
 import os
 from config import Config
 from services.auth import auth_service
+from services.forecast import forecast_service
 from utils.auth import is_authenticated, get_auth_headers, get_current_user
+from utils.datetime import convert_forecast_dates
 
 # Initialisation Flask
 app = Flask(__name__)
@@ -128,6 +130,67 @@ def logout():
     session.clear()
     flash(f'Au revoir {username} ! Vous êtes déconnecté.', 'success')
     return redirect(url_for('index'))
+
+@app.route('/forecast', methods=['GET', 'POST'])
+def forecast():
+    """Page de prévisions crypto"""
+    if not is_authenticated():
+        flash('Vous devez être connecté pour accéder aux prévisions', 'warning')
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        # Récupération des données du formulaire
+        trading_pair = request.form.get('trading_pair', '').strip()
+        granularity = request.form.get('granularity', '').strip()
+        num_pred_str = request.form.get('num_pred', '').strip()
+        
+        # Validation des données
+        if not all([trading_pair, granularity, num_pred_str]):
+            flash('Tous les champs sont requis', 'error')
+            return render_template('forecast.html')
+        
+        try:
+            num_pred = int(num_pred_str)
+        except ValueError:
+            flash('Horizon de prévision invalide', 'error')
+            return render_template('forecast.html')
+        
+        # Validation des paramètres via le service
+        valid, error_msg = forecast_service.validate_forecast_params(trading_pair, granularity, num_pred)
+        if not valid:
+            flash(error_msg, 'error')
+            return render_template('forecast.html')
+        
+        # Appel au service de prévision
+        success, result = forecast_service.get_forecast(trading_pair, granularity, num_pred)
+        
+        if success:
+            # Formatage des résultats pour le template
+            dates_utc = result.get("forecast_dates", [])
+            predictions = result.get("forecast", [])
+            
+            # Conversion des dates UTC vers timezone Paris avec format selon granularité
+            dates_paris = convert_forecast_dates(dates_utc, granularity)
+            
+            # Création des paires (date, prix) pour le template
+            forecast_result = list(zip(dates_paris, predictions))
+            
+            # Paramètres pour affichage
+            forecast_params = {
+                'trading_pair': trading_pair,
+                'granularity': granularity,
+                'num_pred': num_pred
+            }
+            
+            flash(f'Prévision réalisée avec succès ! {len(predictions)} points prédits.', 'success')
+            return render_template('forecast.html', 
+                                 forecast_result=forecast_result, 
+                                 forecast_params=forecast_params)
+        else:
+            error_message = result.get('error', 'Erreur lors de la prévision')
+            flash(error_message, 'error')
+    
+    return render_template('forecast.html')
 
 
 # =================== GESTION D'ERREURS ===================

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Prévisions Crypto - Prévision Crypto{% endblock %}
+{% block nav %}
+<a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+<a href="{{ url_for('logout') }}" class="nav-link">Se déconnecter</a>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--primary); margin-bottom: 1rem;">
+            Prévisions Crypto
+        </h1>
+        <p style="color: #666; margin: 0; line-height: 1.6;">
+            Utilisez l'intelligence artificielle pour prévoir l'évolution des prix du Bitcoin et de l'Ethereum.
+            Choisissez votre paire de trading, la granularité et l'horizon de prévision.
+        </p>
+    </div>
+
+    <!-- Formulaire de prévision -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1.5rem;">
+            Paramètres de prévision
+        </h2>
+        
+        <form method="POST" action="{{ url_for('forecast') }}" id="forecastForm">
+            <!-- Protection CSRF si utilisé -->
+            {% if csrf_token %}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="trading_pair" class="form-label">Paire de trading</label>
+                <select id="trading_pair" name="trading_pair" class="form-input" required>
+                    <option value="">Sélectionnez une paire...</option>
+                    <option value="BTC-USDT" {{ 'selected' if request.form.trading_pair == 'BTC-USDT' }}>
+                        Bitcoin / USDT (BTC-USDT)
+                    </option>
+                    <option value="ETH-USDT" {{ 'selected' if request.form.trading_pair == 'ETH-USDT' }}>
+                        Ethereum / USDT (ETH-USDT)
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="granularity" class="form-label">Granularité</label>
+                <select id="granularity" name="granularity" class="form-input" required onchange="updateHorizonOptions()">
+                    <option value="">Sélectionnez une granularité...</option>
+                    <option value="hourly" {{ 'selected' if request.form.granularity == 'hourly' }}>
+                        Horaire (prévision par heures)
+                    </option>
+                    <option value="daily" {{ 'selected' if request.form.granularity == 'daily' }}>
+                        Journalière (prévision par jours)
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="num_pred" class="form-label">Horizon de prévision</label>
+                <select id="num_pred" name="num_pred" class="form-input" required>
+                    <option value="">Sélectionnez d'abord une granularité...</option>
+                </select>
+                <small style="color: #666; font-size: 0.9rem; margin-top: 0.5rem; display: block;">
+                    La durée maximale dépend de la granularité choisie
+                </small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full" style="margin-top: 1rem;">
+                Lancer la prévision
+            </button>
+        </form>
+    </div>
+
+    <!-- Résultats de prévision -->
+    {% if forecast_result %}
+    <div class="card">
+        <h2 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1.5rem;">
+            Résultats de la prévision
+        </h2>
+        
+        <!-- Informations sur la prévision -->
+        <div style="background: rgba(14, 59, 44, 0.05); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div>
+                    <strong style="color: var(--primary);">Paire:</strong>
+                    <span>{{ forecast_params.trading_pair }}</span>
+                </div>
+                <div>
+                    <strong style="color: var(--primary);">Granularité:</strong>
+                    <span>{{ 'Horaire' if forecast_params.granularity == 'hourly' else 'Journalière' }}</span>
+                </div>
+                <div>
+                    <strong style="color: var(--primary);">Horizon:</strong>
+                    <span>{{ forecast_params.num_pred }} {{ 'heure(s)' if forecast_params.granularity == 'hourly' else 'jour(s)' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tableau des prévisions -->
+        <div class="forecast-table-container" style="display: flex; justify-content: center;">
+            <div style="overflow-x: auto; max-width: 600px; width: 100%;">
+                <table class="forecast-table" style="width: 100%; border-collapse: collapse; margin-top: 1rem; box-shadow: 0 2px 8px rgba(14, 59, 44, 0.1); border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: var(--primary); color: white;">
+                            <th style="padding: 1rem; text-align: left; width: 60%;">
+                                Date (Paris)
+                            </th>
+                            <th style="padding: 1rem; text-align: right; width: 40%;">
+                                Prix prévu (USD)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for date, price in forecast_result %}
+                        <tr style="border-bottom: 1px solid var(--border); {% if loop.index % 2 == 0 %}background: rgba(240, 244, 242, 0.5);{% endif %}">
+                            <td style="padding: 0.75rem 1rem; font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--text-dark);">
+                                {{ date }}
+                            </td>
+                            <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: var(--primary); font-size: 1rem;">
+                                ${{ "%.2f"|format(price) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div style="margin-top: 1.5rem; text-align: center;">
+            <a href="{{ url_for('forecast') }}" class="btn btn-secondary">
+                Nouvelle prévision
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informations importantes -->
+    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 1rem; margin-top: 2rem;">
+        <h3 style="color: var(--error); margin-bottom: 0.5rem; font-size: 1rem;">
+            ⚠️ Avertissement important
+        </h3>
+        <p style="font-size: 0.9rem; line-height: 1.5; margin: 0;">
+            Ces prévisions sont générées par des modèles d'intelligence artificielle et ne constituent en aucun cas 
+            des conseils financiers. Les marchés de cryptomonnaies sont très volatils et imprévisibles. 
+            Ne jamais investir plus que ce que vous pouvez vous permettre de perdre.
+        </p>
+    </div>
+</div>
+
+<script>
+function updateHorizonOptions() {
+    const granularitySelect = document.getElementById('granularity');
+    const horizonSelect = document.getElementById('num_pred');
+    const selectedGranularity = granularitySelect.value;
+    
+    // Vider les options existantes
+    horizonSelect.innerHTML = '';
+    
+    if (selectedGranularity === 'hourly') {
+        horizonSelect.innerHTML = '<option value="">Sélectionnez l\'horizon...</option>';
+        for (let i = 1; i <= 24; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `${i} heure${i > 1 ? 's' : ''}`;
+            horizonSelect.appendChild(option);
+        }
+    } else if (selectedGranularity === 'daily') {
+        horizonSelect.innerHTML = '<option value="">Sélectionnez l\'horizon...</option>';
+        for (let i = 1; i <= 7; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `${i} jour${i > 1 ? 's' : ''}`;
+            horizonSelect.appendChild(option);
+        }
+    } else {
+        horizonSelect.innerHTML = '<option value="">Sélectionnez d\'abord une granularité...</option>';
+    }
+}
+
+// Initialiser les options au chargement de la page si nécessaire
+document.addEventListener('DOMContentLoaded', function() {
+    const granularitySelect = document.getElementById('granularity');
+    if (granularitySelect.value) {
+        updateHorizonOptions();
+        // Restaurer la valeur sélectionnée si elle existe
+        const savedHorizon = '{{ request.form.num_pred }}';
+        if (savedHorizon) {
+            document.getElementById('num_pred').value = savedHorizon;
+        }
+    }
+});
+</script>
+
+<style>
+/* Styles spécifiques à la page de prévisions */
+.form-input:invalid {
+    border-color: var(--error);
+}
+
+.form-input:valid {
+    border-color: var(--success);
+}
+
+/* Animation du bouton */
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 59, 44, 0.3);
+}
+
+/* Responsive pour le tableau */
+@media (max-width: 768px) {
+    /* Réduire la largeur max du conteneur de tableau sur mobile */
+    .forecast-table-container {
+        max-width: 100% !important;
+    }
+    
+    table {
+        font-size: 0.85rem;
+    }
+    
+    th, td {
+        padding: 0.5rem !important;
+    }
+    
+    /* Ajuster les largeurs des colonnes sur mobile */
+    .forecast-table th:first-child,
+    .forecast-table td:first-child {
+        width: 65% !important;
+    }
+    
+    .forecast-table th:last-child,
+    .forecast-table td:last-child {
+        width: 35% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .forecast-table-container {
+        max-width: 100% !important;
+        margin: 0 -1rem; /* Étendre sur toute la largeur sur très petits écrans */
+    }
+}
+</style>
+{% endblock %}
