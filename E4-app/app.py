@@ -6,6 +6,8 @@ import plotly.express as px
 import requests
 import os
 from config import Config
+from services.auth import auth_service
+from utils.auth import is_authenticated, get_auth_headers, get_current_user
 
 # Initialisation Flask
 app = Flask(__name__)
@@ -45,12 +47,16 @@ def login():
             flash('Nom d\'utilisateur et mot de passe requis', 'error')
             return render_template('index.html')
         
-        # TODO: Appel à l'API E1 pour authentification
-        # Pour le moment, authentification factice
-        if username and password:
-            # Simulation d'une authentification réussie
+        # Appel à l'API E1 pour authentification
+        success, result = auth_service.login(username, password)
+        
+        if success:
+            # Stockage des informations de session
             session['user_id'] = username
             session['username'] = username
+            session['access_token'] = result.get('access_token')
+            session['token_type'] = result.get('token_type', 'bearer')
+            session['user_role'] = result.get('role', 'user')
             
             if remember_me:
                 session.permanent = True
@@ -58,7 +64,9 @@ def login():
             flash(f'Connexion réussie ! Bienvenue {username}', 'success')
             return redirect(url_for('dashboard'))
         else:
-            flash('Identifiants invalides', 'error')
+            # Affichage de l'erreur retournée par l'API
+            error_message = result.get('detail', 'Erreur de connexion')
+            flash(error_message, 'error')
     
     return render_template('index.html')
 
@@ -83,14 +91,16 @@ def register():
             flash('Le nom d\'utilisateur doit contenir au moins 3 caractères', 'error')
             return render_template('register.html')
         
-        # TODO: Appel à l'API E1 pour créer le compte
-        # Pour le moment, création factice
-        try:
-            # Simulation d'une création réussie
+        # Appel à l'API E1 pour créer le compte
+        success, result = auth_service.register(username, password)
+        
+        if success:
             flash(f'Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success')
             return redirect(url_for('index'))
-        except Exception as e:
-            flash('Erreur lors de la création du compte', 'error')
+        else:
+            # Affichage de l'erreur retournée par l'API
+            error_message = result.get('detail', 'Erreur lors de la création du compte')
+            flash(error_message, 'error')
     
     return render_template('register.html')
 
@@ -98,15 +108,14 @@ def register():
 @app.route('/dashboard')
 def dashboard():
     """Page principale après connexion (WF2)"""
-    if 'user_id' not in session:
+    if not is_authenticated():
         flash('Vous devez être connecté pour accéder à cette page', 'warning')
         return redirect(url_for('index'))
     
-    # TODO: Récupérer les données via APIs E1 et E3
-    # Pour le moment, données factices
+    # Récupération des données utilisateur depuis la session
     user_data = {
         'username': session.get('username', 'Utilisateur'),
-        'last_login': 'Aujourd\'hui'
+        'user_role': session.get('user_role', 'user'),
     }
     
     return render_template('dashboard.html', user=user_data)
@@ -133,13 +142,6 @@ def internal_error(error):
     """Page 500"""
     flash('Erreur interne du serveur', 'error')
     return render_template('base.html'), 500
-
-
-# =================== FONCTIONS UTILITAIRES ===================
-
-def is_authenticated():
-    """Vérifie si l'utilisateur est connecté"""
-    return 'user_id' in session
 
 
 # =================== LANCEMENT ===================
