@@ -2,6 +2,7 @@ import requests
 import logging
 from typing import Dict, Optional, Tuple, List
 from config import Config
+from utils.logger import logger as app_logger
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class ForecastService:
                 "password": self.password
             }
             
-            logger.info("Authentification auprès de l'API E3")
+            app_logger.log_info("Authentification auprès de l'API E3")
             response = requests.post(
                 Config.ENDPOINTS_E3["login"],
                 data=data,
@@ -38,17 +39,17 @@ class ForecastService:
             if response.status_code == 200:
                 result = response.json()
                 token = result.get("access_token")
-                logger.info("Authentification E3 réussie")
+                app_logger.log_info("Authentification E3 réussie")
                 return True, token
             else:
-                logger.error(f"Erreur d'authentification E3: {response.status_code}")
+                app_logger.log_error(f"Erreur d'authentification E3: {response.status_code}")
                 return False, ""
                 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Erreur réseau lors de l'authentification E3: {str(e)}")
+            app_logger.log_error(f"Erreur réseau lors de l'authentification E3: {str(e)}")
             return False, ""
         except Exception as e:
-            logger.error(f"Erreur inattendue lors de l'authentification E3: {str(e)}")
+            app_logger.log_error(f"Erreur inattendue lors de l'authentification E3: {str(e)}")
             return False, ""
     
     def get_forecast(self, trading_pair: str, granularity: str, num_pred: int) -> Tuple[bool, Dict]:

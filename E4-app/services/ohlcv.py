@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from config import Config
 from utils.auth import get_auth_headers
 from utils.datetime import utc_to_paris_simple
+from utils.logger import logger
 
 
 class OHLCVService:
@@ -84,12 +85,13 @@ class OHLCVService:
         try:
             headers = get_auth_headers()
             if not headers:
+                logger.log_warning("Headers d'authentification manquants pour récupération OHLCV")
                 return []
             
             # Construire l'URL selon la granularité
             endpoint_key = f"ohlcv_{granularity}"
             if endpoint_key not in self.config.ENDPOINTS_E1:
-                print(f"Granularité non supportée: {granularity}")
+                logger.log_error(f"Granularité non supportée: {granularity}")
                 return []
             
             url = f"{self.config.ENDPOINTS_E1[endpoint_key]}/{trading_pair_id}"
@@ -103,6 +105,7 @@ class OHLCVService:
                 start_date_obj = datetime.now() - timedelta(days=days_back)
                 params['start_date'] = start_date_obj.isoformat()
             
+            logger.log_info(f"Récupération données OHLCV pour paire {trading_pair_id}, granularité {granularity}")
             response = requests.get(
                 url,
                 headers=headers,
@@ -112,9 +115,10 @@ class OHLCVService:
             
             if response.status_code == 200:
                 data = response.json()
+                logger.log_info(f"Données OHLCV récupérées: {len(data) if isinstance(data, list) else 0} enregistrements")
                 return data if isinstance(data, list) else []
             else:
-                print(f"Erreur lors de la récupération des données OHLCV: {response.status_code}")
+                logger.log_error(f"Erreur lors de la récupération des données OHLCV: {response.status_code}")
                 return []
                 
         except requests.RequestException as e:

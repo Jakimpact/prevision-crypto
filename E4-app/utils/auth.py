@@ -2,6 +2,7 @@ from flask import session, request, redirect, url_for, flash
 from functools import wraps
 from datetime import datetime, timezone
 from jose import jwt
+from utils.logger import logger
 
 def is_authenticated():
     """Vérifie si l'utilisateur est connecté avec un token valide"""
@@ -10,11 +11,13 @@ def is_authenticated():
     
     for field in required_fields:
         if field not in session:
+            logger.log_debug(f"Champ manquant en session: {field}")
             return False
     
     # Vérification que le token n'est pas vide
     token = session.get('access_token')
     if not token or len(token.strip()) == 0:
+        logger.log_debug("Token vide ou manquant en session")
         return False
     
     return True
@@ -52,9 +55,12 @@ def check_token_validity():
         bool: True si le token est valide, False si expiré ou invalide
     """
     if not is_authenticated():
+        logger.log_debug("Utilisateur non authentifié lors de la vérification du token")
         return False
     
     token = session.get('access_token')
+    username = session.get('username', 'unknown')
+    
     try:
         # Décoder sans vérifier la signature avec une clé factice
         payload = jwt.decode(
@@ -72,6 +78,7 @@ def check_token_validity():
         
         # Si pas de claim d'expiration, le token est invalide
         if exp is None:
+            logger.log_warning(f"Token sans claim d'expiration pour l'utilisateur {username}")
             session.clear()
             return False
         
@@ -80,12 +87,14 @@ def check_token_validity():
         current_time = datetime.now(timezone.utc)
         
         if exp_time < current_time:
+            logger.log_info(f"Token expiré pour l'utilisateur {username} - Déconnexion automatique")
             session.clear()
             return False
         
         return True
-    except Exception:
+    except Exception as e:
         # En cas d'erreur de décodage, nettoyer la session
+        logger.log_error(f"Erreur lors du décodage du token pour l'utilisateur {username}: {str(e)}")
         session.clear()
         return False
 
@@ -98,11 +107,16 @@ def require_valid_token(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        username = session.get('username', 'unknown')
+        
         if not check_token_validity():
             if request.path.startswith('/api/'):
+                logger.log_warning(f"Tentative d'accès API avec token invalide pour {username}: {request.path}")
                 return {'error': 'Token expiré, veuillez vous reconnecter'}, 401
             else:
+                logger.log_info(f"Redirection vers page de connexion pour {username} - Token invalide: {request.path}")
                 flash('Votre session a expiré, veuillez vous reconnecter', 'warning')
                 return redirect(url_for('index'))
+        
         return f(*args, **kwargs)
     return decorated_function

@@ -3,8 +3,9 @@ from config import Config
 from services.auth import auth_service
 from services.forecast import forecast_service
 from services.ohlcv import OHLCVService
-from utils.auth import is_authenticated, require_valid_token
+from utils.auth import require_valid_token
 from utils.datetime import convert_forecast_dates
+from utils.logger import log_info, log_warning, log_error, log_debug
 
 # Initialisation des services
 ohlcv_service = OHLCVService()
@@ -12,6 +13,9 @@ ohlcv_service = OHLCVService()
 # Initialisation Flask
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Log du démarrage de l'application
+log_info("Application E4 démarrée", include_user=False)
 
 
 # =================== ROUTES FLASK ===================
@@ -52,9 +56,15 @@ def login():
             if remember_me:
                 session.permanent = True
             
+            # Log connexion réussie
+            log_info(f"Connexion réussie - Utilisateur: {username}")
+            
             flash(f'Connexion réussie ! Bienvenue {username}', 'success')
             return redirect(url_for('dashboard'))
         else:
+            # Log tentative de connexion échouée
+            log_warning(f"Tentative de connexion échouée - Utilisateur: {username} - Erreur: {result.get('detail', 'Erreur inconnue')}")
+            
             # Affichage de l'erreur retournée par l'API
             error_message = result.get('detail', 'Erreur de connexion')
             flash(error_message, 'error')
@@ -86,9 +96,11 @@ def register():
         success, result = auth_service.register(username, password)
         
         if success:
+            log_info(f"Nouveau compte créé - Utilisateur: {username}")
             flash(f'Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success')
             return redirect(url_for('index'))
         else:
+            log_warning(f"Échec création compte - Utilisateur: {username} - Erreur: {result.get('detail', 'Erreur inconnue')}")
             # Affichage de l'erreur retournée par l'API
             error_message = result.get('detail', 'Erreur lors de la création du compte')
             flash(error_message, 'error')
@@ -100,6 +112,8 @@ def register():
 @require_valid_token
 def dashboard():
     """Page principale après connexion (WF2)"""
+    log_debug("Accès au dashboard")
+    
     # Récupération des données utilisateur depuis la session
     user_data = {
         'username': session.get('username', 'Utilisateur'),
@@ -113,6 +127,7 @@ def dashboard():
 def logout():
     """Déconnexion"""
     username = session.get('username', 'Utilisateur')
+    log_info(f"Déconnexion - Utilisateur: {username}")
     session.clear()
     flash(f'Au revoir {username} ! Vous êtes déconnecté.', 'success')
     return redirect(url_for('index'))
@@ -152,6 +167,9 @@ def forecast():
             dates_utc = result.get("forecast_dates", [])
             predictions = result.get("forecast", [])
             
+            # Log prévision réussie
+            log_info(f"Prévision générée - Paire: {trading_pair} - Granularité: {granularity} - Points: {len(predictions)}")
+            
             # Conversion des dates UTC vers timezone Paris avec format selon granularité
             dates_paris = convert_forecast_dates(dates_utc, granularity)
             
@@ -171,6 +189,7 @@ def forecast():
                                  forecast_params=forecast_params)
         else:
             error_message = result.get('error', 'Erreur lors de la prévision')
+            log_warning(f"Échec prévision - Paire: {trading_pair} - Erreur: {error_message}")
             flash(error_message, 'error')
     
     return render_template('forecast.html')
@@ -180,6 +199,7 @@ def forecast():
 @require_valid_token
 def charts():
     """Page de visualisation des graphiques (WF3)"""
+    log_debug("Accès à la page graphiques")
     return render_template('charts.html')
 
 
@@ -192,6 +212,8 @@ def api_chart_data():
     quote_symbol = request.args.get('quote', 'USDT')
     granularity = request.args.get('granularity', 'hourly')
     
+    log_debug(f"Appel API chart-data - Paire: {base_symbol}/{quote_symbol} - Granularité: {granularity}")
+    
     try:
         # Récupération de toutes les données disponibles via le service OHLCV
         ohlcv_data, forecast_data, trading_pair = ohlcv_service.get_all_data(
@@ -201,6 +223,7 @@ def api_chart_data():
         )
         
         if not trading_pair:
+            log_warning(f"Paire de trading non trouvée - {base_symbol}/{quote_symbol}")
             return {
                 'error': f'Paire de trading {base_symbol}/{quote_symbol} non trouvée'
             }, 404
@@ -224,6 +247,7 @@ def api_chart_data():
         return chart_data
         
     except Exception as e:
+        log_error(f"Erreur récupération données graphiques: {str(e)}", exc_info=True)
         print(f"Erreur lors de la récupération des données de graphiques: {e}")
         return {
             'error': 'Erreur lors de la récupération des données'
@@ -238,6 +262,7 @@ def api_trading_pairs():
         trading_pairs = ohlcv_service.get_available_pairs()
         return {'trading_pairs': trading_pairs}
     except Exception as e:
+        log_error(f"Erreur récupération paires de trading: {str(e)}", exc_info=True)
         print(f"Erreur lors de la récupération des paires de trading: {e}")
         return {'error': 'Erreur lors de la récupération des paires'}, 500
 

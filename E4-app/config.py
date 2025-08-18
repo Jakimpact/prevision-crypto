@@ -41,17 +41,26 @@ class Config:
     DEBUG = os.getenv('DEBUG', 'True').lower() in ['true', '1', 'yes']
     HOST = os.getenv('HOST', '0.0.0.0')
     PORT = int(os.getenv('PORT', '5000'))
+    
+    # Configuration Logging
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
+    LOG_DIR = os.getenv('LOG_DIR', 'logs')
+    LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', '10485760'))  # 10MB
+    LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '5'))
+    LOG_FORMAT = '[%(asctime)s] %(levelname)s - %(message)s'
 
 
 class DevelopmentConfig(Config):
     """Configuration pour l'environnement de développement"""
     DEBUG = True
+    LOG_LEVEL = 'DEBUG'
 
 
 class ProductionConfig(Config):
     """Configuration pour l'environnement de production"""
     DEBUG = False
     SECRET_KEY = os.getenv('SECRET_KEY')  # Obligatoire en production
+    LOG_LEVEL = 'WARNING'
     
     @classmethod
     def init_app(cls, app):
