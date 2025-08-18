@@ -37,9 +37,6 @@ class Config:
         "forecast_daily": f"{URL_E3}/api/v1/forecast/forecast_daily",
     }
     
-    # Configuration Dash
-    DASH_URL_BASE_PATHNAME = '/ui/'
-    
     # Autres configurations
     DEBUG = os.getenv('DEBUG', 'True').lower() in ['true', '1', 'yes']
     HOST = os.getenv('HOST', '0.0.0.0')

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Union, Optional
+from typing import List
 import pytz
 
 # Timezone de Paris (gère automatiquement CET/CEST)

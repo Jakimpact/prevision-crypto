@@ -1,15 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import plotly.express as px
-import requests
-import os
 from config import Config
 from services.auth import auth_service
 from services.forecast import forecast_service
 from services.ohlcv import OHLCVService
-from utils.auth import is_authenticated, get_auth_headers, get_current_user
+from utils.auth import is_authenticated
 from utils.datetime import convert_forecast_dates
 
 # Initialisation des services
@@ -18,15 +12,6 @@ ohlcv_service = OHLCVService()
 # Initialisation Flask
 app = Flask(__name__)
 app.config.from_object(Config)
-
-# Initialisation Dash
-dash_app = dash.Dash(__name__, server=app, url_base_pathname=Config.DASH_URL_BASE_PATHNAME)
-
-# Configuration de base pour Dash
-dash_app.layout = html.Div([
-    html.H1("Dashboard Crypto", style={'text-align': 'center'}),
-    html.P("Interface Dash en cours de développement...", style={'text-align': 'center'})
-])
 
 
 # =================== ROUTES FLASK ===================
