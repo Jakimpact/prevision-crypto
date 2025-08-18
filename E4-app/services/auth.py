@@ -1,7 +1,7 @@
 import requests
 import logging
 from typing import Dict, Optional, Tuple
-from config import Config, ENDPOINTS_E1
+from config import Config
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class AuthService:
         Returns:
             Tuple (success: bool, response: dict)
         """
-        url = ENDPOINTS_E1["login"]
+        url = Config.ENDPOINTS_E1["login"]
         
         # Données en format form-urlencoded selon l'OpenAPI
         data = {
@@ -84,7 +84,7 @@ class AuthService:
         Returns:
             Tuple (success: bool, response: dict)
         """
-        url = ENDPOINTS_E1["register"]
+        url = Config.ENDPOINTS_E1["register"]
         
         # Données en format JSON selon l'OpenAPI
         json_data = {

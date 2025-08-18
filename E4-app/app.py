@@ -8,8 +8,12 @@ import os
 from config import Config
 from services.auth import auth_service
 from services.forecast import forecast_service
+from services.ohlcv import OHLCVService
 from utils.auth import is_authenticated, get_auth_headers, get_current_user
 from utils.datetime import convert_forecast_dates
+
+# Initialisation des services
+ohlcv_service = OHLCVService()
 
 # Initialisation Flask
 app = Flask(__name__)
@@ -191,6 +195,79 @@ def forecast():
             flash(error_message, 'error')
     
     return render_template('forecast.html')
+
+
+@app.route('/charts')
+def charts():
+    """Page de visualisation des graphiques (WF3)"""
+    if not is_authenticated():
+        flash('Veuillez vous connecter pour accéder aux graphiques', 'error')
+        return redirect(url_for('index'))
+    
+    return render_template('charts.html')
+
+
+@app.route('/api/chart-data')
+def api_chart_data():
+    """API pour récupérer les données de graphiques"""
+    if not is_authenticated():
+        return {'error': 'Non authentifié'}, 401
+    
+    # Paramètres de la requête
+    base_symbol = request.args.get('base', 'BTC')
+    quote_symbol = request.args.get('quote', 'USDT')
+    granularity = request.args.get('granularity', 'hourly')
+    
+    try:
+        # Récupération de toutes les données disponibles via le service OHLCV
+        ohlcv_data, forecast_data, trading_pair = ohlcv_service.get_all_data(
+            base_symbol=base_symbol,
+            quote_symbol=quote_symbol,
+            granularity=granularity
+        )
+        
+        if not trading_pair:
+            return {
+                'error': f'Paire de trading {base_symbol}/{quote_symbol} non trouvée'
+            }, 404
+        
+        # Formatage des données pour les graphiques
+        chart_data = ohlcv_service.format_chart_data(ohlcv_data, forecast_data)
+        
+        # Ajout des informations sur la paire
+        chart_data['trading_pair'] = {
+            'id': trading_pair.get('id'),
+            'base_symbol': base_symbol,
+            'quote_symbol': quote_symbol,
+            'display_name': f"{base_symbol}/{quote_symbol}"
+        }
+        
+        # Ajout des paramètres de la requête
+        chart_data['params'] = {
+            'granularity': granularity
+        }
+        
+        return chart_data
+        
+    except Exception as e:
+        print(f"Erreur lors de la récupération des données de graphiques: {e}")
+        return {
+            'error': 'Erreur lors de la récupération des données'
+        }, 500
+
+
+@app.route('/api/trading-pairs')
+def api_trading_pairs():
+    """API pour récupérer la liste des paires de trading disponibles"""
+    if not is_authenticated():
+        return {'error': 'Non authentifié'}, 401
+    
+    try:
+        trading_pairs = ohlcv_service.get_available_pairs()
+        return {'trading_pairs': trading_pairs}
+    except Exception as e:
+        print(f"Erreur lors de la récupération des paires de trading: {e}")
+        return {'error': 'Erreur lors de la récupération des paires'}, 500
 
 
 # =================== GESTION D'ERREURS ===================

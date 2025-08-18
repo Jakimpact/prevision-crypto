@@ -3,6 +3,9 @@
 {% block title %}Dashboard - Prévision Crypto{% endblock %}
 
 {% block nav %}
+<a href="{{ url_for('dashboard') }}" class="nav-link">Tableau de bord</a>
+<a href="{{ url_for('forecast') }}" class="nav-link">Prévisions</a>
+<a href="{{ url_for('charts') }}" class="nav-link">Graphiques</a>
 <a href="{{ url_for('logout') }}" class="nav-link">Se déconnecter</a>
 {% endblock %}
 

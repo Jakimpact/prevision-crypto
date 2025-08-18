@@ -1,7 +1,7 @@
 import requests
 import logging
 from typing import Dict, Optional, Tuple, List
-from config import Config, ENDPOINTS_E3
+from config import Config
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class ForecastService:
             
             logger.info("Authentification auprès de l'API E3")
             response = requests.post(
-                ENDPOINTS_E3["login"],
+                Config.ENDPOINTS_E3["login"],
                 data=data,
                 timeout=self.timeout
             )
@@ -71,9 +71,9 @@ class ForecastService:
             
             # Sélection de l'endpoint selon la granularité
             if granularity == "hourly":
-                url = ENDPOINTS_E3["forecast_hourly"]
+                url = Config.ENDPOINTS_E3["forecast_hourly"]
             elif granularity == "daily":
-                url = ENDPOINTS_E3["forecast_daily"]
+                url = Config.ENDPOINTS_E3["forecast_daily"]
             else:
                 return False, {"error": "Granularité non supportée"}
             

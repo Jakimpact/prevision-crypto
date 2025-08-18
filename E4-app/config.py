@@ -20,6 +20,22 @@ class Config:
     URL_E3 = os.getenv("URL_E3")
     E3_API_USERNAME = os.getenv("E3_API_USERNAME")
     E3_API_PASSWORD = os.getenv("E3_API_PASSWORD")
+
+    ENDPOINTS_E1 = {
+        "login": f"{URL_E1}/api/v1/authentification/login",
+        "register": f"{URL_E1}/api/v1/authentification/register",
+        "trading_pair": f"{URL_E1}/api/v1/trading_pairs/trading_pair_by_currency_symbols",
+        "ohlcv_hourly": f"{URL_E1}/api/v1/ohlcv/hourly_by_trading_pair_id",
+        "ohlcv_daily": f"{URL_E1}/api/v1/ohlcv/daily_by_trading_pair_id",
+        "forecast_hourly": f"{URL_E1}/api/v1/forecast/hourly_by_trading_pair_id",
+        "forecast_daily": f"{URL_E1}/api/v1/forecast/daily_by_trading_pair_id",
+    }
+
+    ENDPOINTS_E3 = {
+        "login": f"{URL_E3}/api/v1/authentification/login",
+        "forecast_hourly": f"{URL_E3}/api/v1/forecast/forecast_hourly",
+        "forecast_daily": f"{URL_E3}/api/v1/forecast/forecast_daily",
+    }
     
     # Configuration Dash
     DASH_URL_BASE_PATHNAME = '/ui/'
@@ -52,28 +68,4 @@ config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
     'default': DevelopmentConfig
-}
-
-
-URL_E1 = Config.URL_E1
-URL_E3 = Config.URL_E3
-E3_API_USERNAME = Config.E3_API_USERNAME
-E3_API_PASSWORD = Config.E3_API_PASSWORD
-
-
-ENDPOINTS_E1 = {
-    "login": f"{URL_E1}/api/v1/authentification/login",
-    "register": f"{URL_E1}/api/v1/authentification/register",
-    "trading_pair": f"{URL_E1}/api/v1/trading_pairs/trading_pair_by_currency_symbols",
-    "ohlcv_hourly": f"{URL_E1}/api/v1/ohlcv/hourly_by_trading_pair_id",
-    "ohlcv_daily": f"{URL_E1}/api/v1/ohlcv/daily_by_trading_pair_id",
-    "forecast_hourly": f"{URL_E1}/api/v1/forecast/hourly_by_trading_pair_id",
-    "forecast_daily": f"{URL_E1}/api/v1/forecast/daily_by_trading_pair_id",
-}
-
-
-ENDPOINTS_E3 = {
-    "login": f"{URL_E3}/api/v1/authentification/login",
-    "forecast_hourly": f"{URL_E3}/api/v1/forecast/forecast_hourly",
-    "forecast_daily": f"{URL_E3}/api/v1/forecast/forecast_daily",
 }
