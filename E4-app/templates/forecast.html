@@ -9,7 +9,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
     <!-- Header -->
     <div class="card" style="margin-bottom: 2rem;">
         <h1 style="color: var(--primary); margin-bottom: 1rem;">
@@ -27,11 +26,12 @@
             Paramètres de prévision
         </h2>
         
-        <form method="POST" action="{{ url_for('forecast') }}" id="forecastForm">
-            <!-- Protection CSRF si utilisé -->
-            {% if csrf_token %}
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            {% endif %}
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('forecast') }}" id="forecastForm">
+                <!-- Protection CSRF si utilisé -->
+                {% if csrf_token %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                {% endif %}
             
             <div class="form-group">
                 <label for="trading_pair" class="form-label">Paire de trading</label>
@@ -72,7 +72,8 @@
             <button type="submit" class="btn btn-primary btn-full" style="margin-top: 1rem;">
                 Lancer la prévision
             </button>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Résultats de prévision -->
@@ -103,13 +104,13 @@
         <!-- Tableau des prévisions -->
         <div class="forecast-table-container" style="display: flex; justify-content: center;">
             <div style="overflow-x: auto; max-width: 600px; width: 100%;">
-                <table class="forecast-table" style="width: 100%; border-collapse: collapse; margin-top: 1rem; box-shadow: 0 2px 8px rgba(14, 59, 44, 0.1); border-radius: 8px; overflow: hidden;">
+                <table class="forecast-table" style="width: 100%; border-collapse: collapse; margin: 1rem auto; box-shadow: 0 2px 8px rgba(14, 59, 44, 0.1); border-radius: 8px; overflow: hidden;">
                     <thead>
                         <tr style="background: var(--primary); color: white;">
-                            <th style="padding: 1rem; text-align: left; width: 60%;">
+                            <th style="padding: 1rem; text-align: center; width: 60%;">
                                 Date (Paris)
                             </th>
-                            <th style="padding: 1rem; text-align: right; width: 40%;">
+                            <th style="padding: 1rem; text-align: center; width: 40%;">
                                 Prix prévu (USD)
                             </th>
                         </tr>
@@ -117,11 +118,11 @@
                     <tbody>
                         {% for date, price in forecast_result %}
                         <tr style="border-bottom: 1px solid var(--border); {% if loop.index % 2 == 0 %}background: rgba(240, 244, 242, 0.5);{% endif %}">
-                            <td style="padding: 0.75rem 1rem; font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--text-dark);">
+                            <td style="padding: 0.75rem 1rem; font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--text-dark); text-align: center;">
                                 {{ date }}
                             </td>
-                            <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: var(--primary); font-size: 1rem;">
-                                ${{ "%.2f"|format(price) }}
+                            <td style="padding: 0.75rem 1rem; text-align: center; font-weight: 600; color: var(--primary); font-size: 1rem;">
+                                ${{ "{:,.0f}".format(price) }}
                             </td>
                         </tr>
                         {% endfor %}

@@ -10,19 +10,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
     <!-- Header utilisateur -->
     <div class="card" style="margin-bottom: 2rem;">
-        <div style="display: flex; justify-content: between; align-items: center;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap;">
             <div>
                 <h1 style="color: var(--primary); margin-bottom: 0.5rem;">
                     Bienvenue {{ user.username }} !
                 </h1>
-            </div>
-            <div>
-                <a href="/ui/" class="btn btn-primary">
-                    Voir les graphiques
-                </a>
             </div>
         </div>
     </div>
@@ -30,17 +24,17 @@
     <!-- Message d'information -->
     <div style="background: rgba(14, 59, 44, 0.05); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
         <h3 style="color: var(--primary); margin-bottom: 1rem;">
-            🚧 Dashboard en développement
+            Projet de Certification - Solution IA de Prévision Crypto
         </h3>
-        <p style="color: var(--text-dark); margin-bottom: 1rem;">
-            Cette page sera prochainement enrichie avec :
+        <p style="color: var(--text-dark); margin-bottom: 1rem; line-height: 1.6;">
+            Cette application est développée dans le cadre d'un projet de certification de Développeur en Intelligence Artificielle. 
+            Elle propose une solution complète de prévision des cours de cryptomonnaies basée sur des modèles IA personnalisés.
         </p>
-        <ul style="color: var(--text-dark); line-height: 1.8;">
-            <li>Aperçu des prévisions crypto en temps réel</li>
-            <li>Graphiques interactifs (accessible via le bouton ci-dessus)</li>
-            <li>Données OHLCV live</li>
-            <li>Prédictions IA personnalisées</li>
-        </ul>
+        <div style="color: var(--text-dark); line-height: 1.8;">
+            <p style="margin-bottom: 1rem;">
+                <strong>Fonctionnalités principales :</strong> Cette solution intègre des prévisions intelligentes pour Bitcoin (BTC) et Ethereum (ETH) grâce à des modèles IA personnalisés. Elle offre des visualisations interactives des données historiques et prévisionnelles, une interface utilisateur moderne avec authentification sécurisée, ainsi qu'une granularité horaire et journalière pour des analyses précises.
+            </p>
+        </div>
     </div>
 
     <!-- Accès rapide -->
@@ -81,7 +75,6 @@
             </button>
         </div>
     </div>
-</div>
 
 <style>
 /* Styles spécifiques au dashboard */

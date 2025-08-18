@@ -10,7 +10,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
     <!-- Header -->
     <div class="card" style="margin-bottom: 2rem;">
         <h1 style="color: var(--primary); margin-bottom: 1rem;">
@@ -25,45 +24,47 @@
     <div class="card" style="margin-bottom: 2rem;">
         <h2 style="color: var(--primary); margin-bottom: 1rem;">Configuration</h2>
         
-        <form id="chart-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; align-items: end; max-width: 1000px;">
-            <div class="form-group">
-                <label for="base-symbol" class="form-label">Devise de base</label>
-                <select id="base-symbol" name="base" class="form-control">
-                    <option value="BTC" selected>Bitcoin (BTC)</option>
-                    <option value="ETH">Ethereum (ETH)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="quote-symbol" class="form-label">Devise de cotation</label>
-                <select id="quote-symbol" name="quote" class="form-control">
-                    <option value="USDT" selected>Tether (USDT)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="granularity" class="form-label">Granularité</label>
-                <select id="granularity" name="granularity" class="form-control">
-                    <option value="hourly" selected>Horaire</option>
-                    <option value="daily">Journalier</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="display-mode" class="form-label">Affichage</label>
-                <select id="display-mode" name="display_mode" class="form-control">
-                    <option value="both" selected>Historique + Prévisions</option>
-                    <option value="historical">Historique uniquement</option>
-                    <option value="forecast">Prévisions uniquement</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    Générer Graphique
-                </button>
-            </div>
-        </form>
+        <div class="form-container">
+            <form id="chart-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; align-items: end; max-width: 1000px; margin: 0 auto;">
+                <div class="form-group">
+                    <label for="base-symbol" class="form-label">Devise de base</label>
+                    <select id="base-symbol" name="base" class="form-control">
+                        <option value="BTC" selected>Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quote-symbol" class="form-label">Devise de cotation</label>
+                    <select id="quote-symbol" name="quote" class="form-control">
+                        <option value="USDT" selected>Tether (USDT)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="granularity" class="form-label">Granularité</label>
+                    <select id="granularity" name="granularity" class="form-control">
+                        <option value="hourly" selected>Horaire</option>
+                        <option value="daily">Journalier</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="display-mode" class="form-label">Affichage</label>
+                    <select id="display-mode" name="display_mode" class="form-control">
+                        <option value="both" selected>Historique + Prévisions</option>
+                        <option value="historical">Historique uniquement</option>
+                        <option value="forecast">Prévisions uniquement</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Générer Graphique
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Zone de statut -->
@@ -80,9 +81,9 @@
     </div>
 
     <!-- Zone du graphique -->
-    <div id="chart-container" class="card" style="display: none; max-width: 1200px; margin: 0 auto 2rem auto;">
+    <div id="chart-container" class="card" style="display: none; max-width: 1200px; margin: 0 auto 2rem auto; text-align: center;">
         <h2 style="color: var(--primary); margin-bottom: 1rem;" id="chart-title">Graphique</h2>
-        <div id="price-chart" style="height: 500px;"></div>
+        <div id="price-chart" style="height: 500px; width: 100%;"></div>
     </div>
 
     <!-- Zone d'erreur -->
@@ -90,7 +91,6 @@
         <h3 style="color: #c33; margin-bottom: 0.5rem;">Erreur</h3>
         <p id="error-message" style="color: #c33; margin: 0;"></p>
     </div>
-</div>
 
 <style>
 @keyframes spin {
@@ -145,6 +145,16 @@
 .js-plotly-plot .plotly .modebar-btn:hover {
     background: var(--accent) !important;
     color: white !important;
+}
+
+/* Assurer le centrage du graphique Plotly */
+#price-chart .js-plotly-plot {
+    margin: 0 auto;
+    display: block;
+}
+
+#chart-container .js-plotly-plot .plotly {
+    width: 100% !important;
 }
 </style>
 
@@ -229,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="stat-item">
                 <div class="stat-label">Dernier prix</div>
-                <div class="stat-value">${data.last_price ? data.last_price.toFixed(2) : 'N/A'} ${tradingPair.quote_symbol}</div>
+                <div class="stat-value">${data.last_price ? Math.round(data.last_price).toLocaleString() : 'N/A'} ${tradingPair.quote_symbol}</div>
             </div>
         `;
         
@@ -373,6 +383,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 width: 1000,
                 scale: 1
             }
+        }).then(function() {
+            // Forcer le redimensionnement après création pour assurer le centrage
+            setTimeout(function() {
+                Plotly.Plots.resize('price-chart');
+            }, 100);
         });
         
         chartContainer.style.display = 'block';

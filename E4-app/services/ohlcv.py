@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Any
 from config import Config
 from utils.auth import get_auth_headers
+from utils.datetime import utc_to_paris_simple
 
 
 class OHLCVService:
@@ -363,19 +364,23 @@ class OHLCVService:
     ) -> Dict[str, Any]:
         """
         Formate les données pour l'affichage dans les graphiques.
+        Convertit automatiquement les dates UTC vers le timezone Paris.
         
         Args:
             ohlcv_data: Données OHLCV historiques
             forecast_data: Données de prévisions
             
         Returns:
-            Dict: Données formatées pour les graphiques
+            Dict: Données formatées pour les graphiques avec dates converties
         """
-        # Formater les données OHLCV
+        # Formater les données OHLCV avec conversion timezone
         ohlcv_formatted = []
         for item in ohlcv_data:
+            date_utc = item.get('date')
+            date_paris = utc_to_paris_simple(date_utc) if date_utc else date_utc
+            
             ohlcv_formatted.append({
-                'date': item.get('date'),
+                'date': date_paris,
                 'open': float(item.get('open', 0)),
                 'high': float(item.get('high', 0)),
                 'low': float(item.get('low', 0)),
@@ -383,11 +388,14 @@ class OHLCVService:
                 'volume': float(item.get('volume_quote', 0))
             })
         
-        # Formater les données de prévision
+        # Formater les données de prévision avec conversion timezone
         forecast_formatted = []
         for item in forecast_data:
+            date_utc = item.get('date')
+            date_paris = utc_to_paris_simple(date_utc) if date_utc else date_utc
+            
             forecast_formatted.append({
-                'date': item.get('date'),
+                'date': date_paris,
                 'value': float(item.get('value', 0)),
                 'model_name': item.get('model_name'),
                 'model_version': item.get('model_version')
