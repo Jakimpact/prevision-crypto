@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -26,7 +26,8 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Crée un token JWT avec les données fournies et une durée d'expiration optionnelle."""
     to_encode = data.copy()
-    expire = datetime.now() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    # Utiliser UTC pour éviter les problèmes de timezone
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SecretSettings.API_SECRET_KEY, algorithm=SecretSettings.API_ALGORITHM)
     return encoded_jwt
@@ -35,7 +36,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def decode_access_token(token: str):
     """Décode un token JWT et retourne les données du payload."""
     try:
-        payload = jwt.decode(token, SecretSettings.API_SECRET_KEY, algorithms=[SecretSettings.API_ALGORITHM])
+        payload = jwt.decode(token, SecretSettings.API_SECRET_KEY, algorithms=[SecretSettings.API_ALGORITHM])           
         return payload
     except JWTError:
         return None
