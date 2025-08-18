@@ -3,7 +3,7 @@ from config import Config
 from services.auth import auth_service
 from services.forecast import forecast_service
 from services.ohlcv import OHLCVService
-from utils.auth import is_authenticated
+from utils.auth import is_authenticated, require_valid_token
 from utils.datetime import convert_forecast_dates
 
 # Initialisation des services
@@ -97,12 +97,9 @@ def register():
 
 
 @app.route('/dashboard')
+@require_valid_token
 def dashboard():
     """Page principale après connexion (WF2)"""
-    if not is_authenticated():
-        flash('Vous devez être connecté pour accéder à cette page', 'warning')
-        return redirect(url_for('index'))
-    
     # Récupération des données utilisateur depuis la session
     user_data = {
         'username': session.get('username', 'Utilisateur'),
@@ -121,12 +118,9 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/forecast', methods=['GET', 'POST'])
+@require_valid_token
 def forecast():
     """Page de prévisions crypto"""
-    if not is_authenticated():
-        flash('Vous devez être connecté pour accéder aux prévisions', 'warning')
-        return redirect(url_for('index'))
-    
     if request.method == 'POST':
         # Récupération des données du formulaire
         trading_pair = request.form.get('trading_pair', '').strip()
@@ -183,21 +177,16 @@ def forecast():
 
 
 @app.route('/charts')
+@require_valid_token
 def charts():
     """Page de visualisation des graphiques (WF3)"""
-    if not is_authenticated():
-        flash('Veuillez vous connecter pour accéder aux graphiques', 'error')
-        return redirect(url_for('index'))
-    
     return render_template('charts.html')
 
 
 @app.route('/api/chart-data')
+@require_valid_token
 def api_chart_data():
     """API pour récupérer les données de graphiques"""
-    if not is_authenticated():
-        return {'error': 'Non authentifié'}, 401
-    
     # Paramètres de la requête
     base_symbol = request.args.get('base', 'BTC')
     quote_symbol = request.args.get('quote', 'USDT')
@@ -242,11 +231,9 @@ def api_chart_data():
 
 
 @app.route('/api/trading-pairs')
+@require_valid_token
 def api_trading_pairs():
     """API pour récupérer la liste des paires de trading disponibles"""
-    if not is_authenticated():
-        return {'error': 'Non authentifié'}, 401
-    
     try:
         trading_pairs = ohlcv_service.get_available_pairs()
         return {'trading_pairs': trading_pairs}

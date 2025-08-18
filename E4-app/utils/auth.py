@@ -1,4 +1,7 @@
-from flask import session
+from flask import session, request, redirect, url_for, flash
+from functools import wraps
+from datetime import datetime, timezone
+from jose import jwt
 
 def is_authenticated():
     """Vérifie si l'utilisateur est connecté avec un token valide"""
@@ -40,3 +43,66 @@ def get_current_user():
         'user_role': session.get('user_role', 'user'),
         'access_token': session.get('access_token')
     }
+
+def check_token_validity():
+    """
+    Vérifie la validité du token JWT et déconnecte automatiquement si expiré.
+    
+    Returns:
+        bool: True si le token est valide, False si expiré ou invalide
+    """
+    if not is_authenticated():
+        return False
+    
+    token = session.get('access_token')
+    try:
+        # Décoder sans vérifier la signature avec une clé factice
+        payload = jwt.decode(
+            token, 
+            key="fake-key",  # Clé factice
+            algorithms=["HS256"], 
+            options={
+                "verify_signature": False,
+                "verify_exp": False,  # Nous gérons l'expiration manuellement
+                "verify_aud": False,
+                "verify_iss": False
+            }
+        )
+        exp = payload.get('exp')
+        
+        # Si pas de claim d'expiration, le token est invalide
+        if exp is None:
+            session.clear()
+            return False
+        
+        # Vérifier si le token est expiré
+        exp_time = datetime.fromtimestamp(exp, tz=timezone.utc)
+        current_time = datetime.now(timezone.utc)
+        
+        if exp_time < current_time:
+            session.clear()
+            return False
+        
+        return True
+    except Exception:
+        # En cas d'erreur de décodage, nettoyer la session
+        session.clear()
+        return False
+
+def require_valid_token(f):
+    """
+    Décorateur pour protéger les routes avec validation automatique du token.
+    
+    - Pour les routes API (/api/): retourne une erreur JSON 401
+    - Pour les routes web: redirige vers la page de connexion avec message
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not check_token_validity():
+            if request.path.startswith('/api/'):
+                return {'error': 'Token expiré, veuillez vous reconnecter'}, 401
+            else:
+                flash('Votre session a expiré, veuillez vous reconnecter', 'warning')
+                return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
