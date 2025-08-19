@@ -1,6 +1,10 @@
 import time
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import flask_monitoringdashboard as dashboard
+try:
+    import flask_monitoringdashboard as dashboard  # type: ignore
+except Exception as _dash_import_err:  # pragma: no cover
+    dashboard = None  # Fallback placeholder
 from config import Config
 from services.auth import auth_service
 from services.forecast import forecast_service
@@ -17,8 +21,16 @@ ohlcv_service = OHLCVService()
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialisation du dashboard de monitoring
-dashboard.config.init_from(file=Config.MONITORING_FILE_PATH)
+DISABLE_MONITORING = os.getenv('DISABLE_MONITORING', '0') == '1'
+
+# Initialisation du dashboard de monitoring (protégé pour compatibilité CI / versions Flask)
+if not DISABLE_MONITORING and dashboard:
+    try:
+        dashboard.config.init_from(file=Config.MONITORING_FILE_PATH)
+    except Exception as e:  # pragma: no cover
+        log_warning(f"Impossible d'initialiser le monitoring dashboard: {e}", include_user=False)
+else:
+    log_info("Monitoring dashboard désactivé (tests ou configuration)", include_user=False)
 
 
 # Log du démarrage de l'application
@@ -355,7 +367,11 @@ def internal_error(error):
 
 # =================== LANCEMENT ===================
 
-dashboard.bind(app)
+if not DISABLE_MONITORING and dashboard:
+    try:
+        dashboard.bind(app)
+    except Exception as e:  # pragma: no cover
+        log_warning(f"Monitoring dashboard non lié (erreur: {e})", include_user=False)
 
 if __name__ == '__main__':
     # Affichage des informations de démarrage
