@@ -1,0 +1,95 @@
+name: E3 ML Continuous Delivery
+
+on:
+  push:
+    paths:
+      - 'E3-ml/**'
+      - '.github/workflows/e3-ml-cd.yml'
+  workflow_dispatch:
+
+jobs:
+  test-train-package:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: E3-ml
+    strategy:
+      fail-fast: false
+      matrix:
+        granularity: [hour, day]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: E3-ml/requirements.txt
+
+      - name: Install system libs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgomp1
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+      - name: Run tests (all)
+        env:
+          PYTHONPATH: ./src
+        run: |
+          pytest -q --maxfail=1 --disable-warnings
+
+      - name: Coverage (artifact)
+        if: always()
+        env:
+          PYTHONPATH: ./src
+        run: |
+          pytest --cov=src --cov-report=xml:coverage.xml || true
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e3-ml-coverage-${{ matrix.granularity }}
+          path: E3-ml/coverage.xml
+
+      - name: Train & generate forecasts (granularity ${{ matrix.granularity }})
+        env:
+          PYTHONPATH: ./
+        run: |
+          python update_models_and_forecasts.py --granularity ${{ matrix.granularity }}
+
+      - name: Package models artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: models-${{ matrix.granularity }}
+          path: |
+            E3-ml/models/${{ matrix.granularity == 'hour' && 'hour_models' || 'day_models' }}/
+
+  aggregate-release:
+    needs: test-train-package
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Models Release PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            title: 'ML Release: Sync dev -> main (models updated)'
+            body: 'Automated ML release after successful training and packaging.'
+            base: main
+            branch: release/e3-ml-dev-to-main
+            commit-message: 'chore(ml-release): sync models dev to main'
+            delete-branch: true
+            labels: ml,release,automation
