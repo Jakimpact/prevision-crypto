@@ -75,6 +75,9 @@ jobs:
     needs: build-and-push-image
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,5 +89,8 @@ jobs:
           title: 'Release: Sync dev -> main'
           body: 'Automated release PR after successful CD build.'
           base: main
-          branch: dev
+          branch: release/dev-to-main
+          commit-message: 'chore(release): sync dev to main'
+          delete-branch: true
+          labels: release,automation
           labels: release,automation
