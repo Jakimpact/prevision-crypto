@@ -70,6 +70,8 @@ jobs:
           MOCK_PID=$!
           # Give server time to start
           sleep 3
+          # Preload monkeypatches (generate_test_periods simplification)
+          python -c "import src.C12_tests.mocks.preload_monkeypatches"
           # Create shim mlflow package pointing to mock (if real mlflow import would trigger network)
           mkdir -p mlflow
           echo "from mock_mlflow import *" > mlflow/__init__.py
