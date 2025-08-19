@@ -1,7 +1,16 @@
 import os
+import sys
+import pathlib
 import pytest
 from flask import session
-from app import app as flask_app
+
+# Ensure project root (E4-app) is on sys.path so `import app` works no matter where pytest is launched
+CURRENT_DIR = pathlib.Path(__file__).resolve().parent
+APP_ROOT = CURRENT_DIR.parent  # .../E4-app
+if str(APP_ROOT) not in sys.path:
+    sys.path.insert(0, str(APP_ROOT))
+
+from app import app as flask_app  # noqa: E402
 
 # Disable real monitoring dashboard binding during tests if needed
 os.environ.setdefault('FLASK_ENV', 'testing')

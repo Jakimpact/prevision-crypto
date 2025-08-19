@@ -45,6 +45,7 @@ jobs:
           URL_E3: http://fake-e3
           E3_API_USERNAME: test
           E3_API_PASSWORD: test
+          PYTHONPATH: ./E4-app
         run: |
           pytest -q --maxfail=1 --disable-warnings
 
@@ -56,8 +57,9 @@ jobs:
           URL_E3: http://fake-e3
           E3_API_USERNAME: test
           E3_API_PASSWORD: test
+          PYTHONPATH: ./E4-app
         run: |
-          pytest --cov=. --cov-report=xml --cov-report=term-missing || true
+          pytest --cov=./ --cov-report=xml:coverage.xml --cov-report=term-missing || true
 
       - name: Upload coverage artifact
         if: always()
