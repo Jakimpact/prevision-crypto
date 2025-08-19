@@ -3,6 +3,7 @@ import logging
 from typing import Dict, Optional, Tuple, List
 from config import Config
 from utils.logger import logger as app_logger
+import time
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -30,19 +31,25 @@ class ForecastService:
             }
             
             app_logger.log_info("Authentification auprès de l'API E3")
+            
+            # Mesure du temps de réponse
+            start_time = time.time()
             response = requests.post(
                 Config.ENDPOINTS_E3["login"],
                 data=data,
                 timeout=self.timeout
             )
+            api_duration = time.time() - start_time
             
             if response.status_code == 200:
                 result = response.json()
                 token = result.get("access_token")
                 app_logger.log_info("Authentification E3 réussie")
+                app_logger.log_info(f"METRIC_API_CALL: E3_LOGIN - {api_duration:.3f}s - SUCCESS", include_user=False)
                 return True, token
             else:
                 app_logger.log_error(f"Erreur d'authentification E3: {response.status_code}")
+                app_logger.log_info(f"METRIC_API_CALL: E3_LOGIN - {api_duration:.3f}s - FAILED", include_user=False)
                 return False, ""
                 
         except requests.exceptions.RequestException as e:

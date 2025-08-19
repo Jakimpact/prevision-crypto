@@ -3,6 +3,7 @@ import logging
 from typing import Dict, Optional, Tuple
 from config import Config
 from utils.logger import logger as app_logger
+import time
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -40,26 +41,32 @@ class AuthService:
         try:
             app_logger.log_info(f"Tentative de connexion pour l'utilisateur: {username}")
             
+            # Mesure du temps de réponse API
+            start_time = time.time()
             response = requests.post(
                 url,
                 data=data,
                 headers=headers,
                 timeout=self.timeout
             )
+            api_duration = time.time() - start_time
             
             if response.status_code == 200:
                 result = response.json()
                 app_logger.log_info(f"Connexion réussie pour: {username}")
+                app_logger.log_info(f"METRIC_API_CALL: E1_LOGIN - {api_duration:.3f}s - SUCCESS", include_user=False)
                 return True, result
             
             elif response.status_code == 401:
                 error_data = response.json() if response.content else {'detail': 'Identifiants incorrects'}
                 app_logger.log_warning(f"Échec de connexion pour {username}: {error_data.get('detail')}")
+                app_logger.log_info(f"METRIC_API_CALL: E1_LOGIN - {api_duration:.3f}s - FAILED", include_user=False)
                 return False, error_data
             
             else:
                 error_msg = f"Erreur API E1: {response.status_code}"
                 app_logger.log_error(f"{error_msg} - {response.text}")
+                app_logger.log_info(f"METRIC_API_CALL: E1_LOGIN - {api_duration:.3f}s - ERROR", include_user=False)
                 return False, {'detail': error_msg}
                 
         except requests.exceptions.Timeout:
@@ -100,21 +107,26 @@ class AuthService:
         try:
             app_logger.log_info(f"Tentative d'inscription pour l'utilisateur: {username}")
             
+            # Mesure du temps de réponse API
+            start_time = time.time()
             response = requests.post(
                 url,
                 json=json_data,
                 headers=headers,
                 timeout=self.timeout
             )
+            api_duration = time.time() - start_time
             
             if response.status_code == 200:
                 result = response.json()
                 app_logger.log_info(f"Inscription réussie pour: {username}")
+                app_logger.log_info(f"METRIC_API_CALL: E1_REGISTER - {api_duration:.3f}s - SUCCESS", include_user=False)
                 return True, result
             
             elif response.status_code == 400:
                 error_data = response.json() if response.content else {'detail': 'Nom d\'utilisateur déjà existant'}
                 app_logger.log_warning(f"Échec d'inscription pour {username}: {error_data.get('detail')}")
+                app_logger.log_info(f"METRIC_API_CALL: E1_REGISTER - {api_duration:.3f}s - FAILED", include_user=False)
                 return False, error_data
             
             else:

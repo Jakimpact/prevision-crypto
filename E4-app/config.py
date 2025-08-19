@@ -48,6 +48,17 @@ class Config:
     LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', '10485760'))  # 10MB
     LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '5'))
     LOG_FORMAT = '[%(asctime)s] %(levelname)s - %(message)s'
+    
+    # Fichier de configuration du monitoring
+    MONITORING_FILE_PATH = os.path.join(BASE_DIR, 'monitoring', 'config.cfg')
+
+    # Seuils d'alerte (latence uniquement)
+    THRESHOLDS = {
+        "latency": {
+            "forecast_ms": {"warning": 6000, "critical": 8000},
+            "chart_data_ms": {"warning": 8500, "critical": 10000},
+        }
+    }
 
 
 class DevelopmentConfig(Config):

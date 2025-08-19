@@ -1,4 +1,6 @@
+import time
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+import flask_monitoringdashboard as dashboard
 from config import Config
 from services.auth import auth_service
 from services.forecast import forecast_service
@@ -6,6 +8,7 @@ from services.ohlcv import OHLCVService
 from utils.auth import require_valid_token
 from utils.datetime import convert_forecast_dates
 from utils.logger import log_info, log_warning, log_error, log_debug
+from utils.alerts import check_latency
 
 # Initialisation des services
 ohlcv_service = OHLCVService()
@@ -13,6 +16,10 @@ ohlcv_service = OHLCVService()
 # Initialisation Flask
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Initialisation du dashboard de monitoring
+dashboard.config.init_from(file=Config.MONITORING_FILE_PATH)
+
 
 # Log du démarrage de l'application
 log_info("Application E4 démarrée", include_user=False)
@@ -25,7 +32,7 @@ def index():
     """Page de connexion (WF1)"""
     if 'user_id' in session:
         # Si utilisateur connecté, rediriger vers le dashboard
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('app_dashboard'))
     return render_template('index.html')
 
 
@@ -60,7 +67,7 @@ def login():
             log_info(f"Connexion réussie - Utilisateur: {username}")
             
             flash(f'Connexion réussie ! Bienvenue {username}', 'success')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('app_dashboard'))
         else:
             # Log tentative de connexion échouée
             log_warning(f"Tentative de connexion échouée - Utilisateur: {username} - Erreur: {result.get('detail', 'Erreur inconnue')}")
@@ -110,7 +117,7 @@ def register():
 
 @app.route('/dashboard')
 @require_valid_token
-def dashboard():
+def app_dashboard():
     """Page principale après connexion (WF2)"""
     log_debug("Accès au dashboard")
     
@@ -131,6 +138,7 @@ def logout():
     session.clear()
     flash(f'Au revoir {username} ! Vous êtes déconnecté.', 'success')
     return redirect(url_for('index'))
+
 
 @app.route('/forecast', methods=['GET', 'POST'])
 @require_valid_token
@@ -160,7 +168,10 @@ def forecast():
             return render_template('forecast.html')
         
         # Appel au service de prévision
+        import time
+        start_time = time.time()
         success, result = forecast_service.get_forecast(trading_pair, granularity, num_pred)
+        api_duration = time.time() - start_time
         
         if success:
             # Formatage des résultats pour le template
@@ -184,12 +195,44 @@ def forecast():
             }
             
             flash(f'Prévision réalisée avec succès ! {len(predictions)} points prédits.', 'success')
+            # Log latence prévision (ms)
+            try:
+                log_info(
+                    f"Latence prévision - Paire: {trading_pair} - Granularité: {granularity} - Duree_ms: {int(api_duration * 1000)}"
+                )
+                # Vérification seuils (alerte éventuelle)
+                check_latency(
+                    'forecast_ms',
+                    int(api_duration * 1000),
+                    context={
+                        'pair': trading_pair,
+                        'granularity': granularity,
+                        'points': len(predictions)
+                    }
+                )
+            except Exception:
+                pass
             return render_template('forecast.html', 
                                  forecast_result=forecast_result, 
                                  forecast_params=forecast_params)
         else:
             error_message = result.get('error', 'Erreur lors de la prévision')
-            log_warning(f"Échec prévision - Paire: {trading_pair} - Erreur: {error_message}")
+            log_warning(
+                f"Échec prévision - Paire: {trading_pair} - Duree_ms: {int(api_duration * 1000)} - Erreur: {error_message}"
+            )
+            # Même en cas d'échec on peut déclencher une alerte de latence
+            try:
+                check_latency(
+                    'forecast_ms',
+                    int(api_duration * 1000),
+                    context={
+                        'pair': trading_pair,
+                        'granularity': granularity,
+                        'status': 'error'
+                    }
+                )
+            except Exception:
+                pass
             flash(error_message, 'error')
     
     return render_template('forecast.html')
@@ -215,19 +258,23 @@ def api_chart_data():
     log_debug(f"Appel API chart-data - Paire: {base_symbol}/{quote_symbol} - Granularité: {granularity}")
     
     try:
-        # Récupération de toutes les données disponibles via le service OHLCV
+        # Récupération de toutes les données disponibles via le service OHLCV avec métriques
+        start_time = time.time()
+        
         ohlcv_data, forecast_data, trading_pair = ohlcv_service.get_all_data(
             base_symbol=base_symbol,
             quote_symbol=quote_symbol,
             granularity=granularity
         )
         
+        api_duration = time.time() - start_time
+        
         if not trading_pair:
             log_warning(f"Paire de trading non trouvée - {base_symbol}/{quote_symbol}")
             return {
                 'error': f'Paire de trading {base_symbol}/{quote_symbol} non trouvée'
             }, 404
-        
+                
         # Formatage des données pour les graphiques
         chart_data = ohlcv_service.format_chart_data(ohlcv_data, forecast_data)
         
@@ -244,27 +291,52 @@ def api_chart_data():
             'granularity': granularity
         }
         
+        # Log latence en cas de succès
+        try:
+            log_info(
+                f"Latence chart-data - Paire: {base_symbol}/{quote_symbol} - Granularité: {granularity} - Bougies: {len(ohlcv_data)} - Duree_ms: {int(api_duration * 1000)}"
+            )
+            # Vérification des seuils de latence
+            check_latency(
+                'chart_data_ms',
+                int(api_duration * 1000),
+                context={
+                    'pair': f"{base_symbol}/{quote_symbol}",
+                    'granularity': granularity,
+                    'ohlcv_count': len(ohlcv_data) if ohlcv_data else 0,
+                    'forecast_count': len(forecast_data) if forecast_data else 0
+                }
+            )
+        except Exception:
+            pass
         return chart_data
         
     except Exception as e:
-        log_error(f"Erreur récupération données graphiques: {str(e)}", exc_info=True)
+        try:
+            api_duration = time.time() - start_time
+            log_error(
+                f"Erreur récupération données graphiques - Duree_ms: {int(api_duration * 1000)} - Erreur: {str(e)}",
+                exc_info=True
+            )
+            try:
+                # Alerte éventuelle sur la latence malgré l'erreur
+                check_latency(
+                    'chart_data_ms',
+                    int(api_duration * 1000),
+                    context={
+                        'pair': f"{base_symbol}/{quote_symbol}",
+                        'granularity': granularity,
+                        'status': 'error'
+                    }
+                )
+            except Exception:
+                pass
+        except Exception:
+            log_error(f"Erreur récupération données graphiques: {str(e)}", exc_info=True)
         print(f"Erreur lors de la récupération des données de graphiques: {e}")
         return {
             'error': 'Erreur lors de la récupération des données'
         }, 500
-
-
-@app.route('/api/trading-pairs')
-@require_valid_token
-def api_trading_pairs():
-    """API pour récupérer la liste des paires de trading disponibles"""
-    try:
-        trading_pairs = ohlcv_service.get_available_pairs()
-        return {'trading_pairs': trading_pairs}
-    except Exception as e:
-        log_error(f"Erreur récupération paires de trading: {str(e)}", exc_info=True)
-        print(f"Erreur lors de la récupération des paires de trading: {e}")
-        return {'error': 'Erreur lors de la récupération des paires'}, 500
 
 
 # =================== GESTION D'ERREURS ===================
@@ -283,7 +355,12 @@ def internal_error(error):
 
 # =================== LANCEMENT ===================
 
+dashboard.bind(app)
+
 if __name__ == '__main__':
+    # Affichage des informations de démarrage
+    log_info(f"Démarrage serveur sur {Config.HOST}:{Config.PORT}", include_user=False)
+
     # Utilisation de la configuration centralisée
     app.run(
         host=Config.HOST,
