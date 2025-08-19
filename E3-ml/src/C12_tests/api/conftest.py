@@ -3,10 +3,17 @@ import pytest
 from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
+import os
 
-# Ajout du chemin racine au PYTHONPATH
+# Ajout du chemin racine au PYTHONPATH et configuration des variables secrètes pour les tests
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
 sys.path.append(str(ROOT_DIR))
+
+# Secrets / credentials factices pour tests (avant import de l'app)
+os.environ.setdefault("SECRET_KEY", "testsecret")
+os.environ.setdefault("API_E3_ALGORITHM", "HS256")
+os.environ.setdefault("API_E3_PASSWORD", "test_password")
+os.environ.setdefault("API_E3_USERNAME", "test_user")
 
 from src.C9_api.api import app
 

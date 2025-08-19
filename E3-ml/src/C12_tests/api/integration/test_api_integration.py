@@ -18,7 +18,7 @@ class TestAPIIntegration:
 
     def test_full_workflow_login_and_forecast(self, client):
         """Test du workflow complet : login puis prévision"""
-        # Configuration du mot de passe (patch direct de la variable statique)
+        # S'assure que le mot de passe attendu côté utils correspond à celui injecté via env
         auth_utils.STATIC_PASSWORD = "test_password"
         
         # Étape 1 : Authentification
