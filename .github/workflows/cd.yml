@@ -93,4 +93,3 @@ jobs:
           commit-message: 'chore(release): sync dev to main'
           delete-branch: true
           labels: release,automation
-          labels: release,automation
