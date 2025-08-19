@@ -2,6 +2,7 @@
 Tests pour l'API d'authentification
 """
 import pytest
+from src.C9_api.utils import auth as auth_utils
 from fastapi import status
 
 
@@ -9,10 +10,10 @@ from fastapi import status
 class TestAuthEndpoints:
     """Tests pour les endpoints d'authentification"""
 
-    def test_login_success(self, client, monkeypatch):
+    def test_login_success(self, client):
         """Test de connexion réussie avec un mot de passe valide"""
-        # Mock du mot de passe pour les tests
-        monkeypatch.setenv("API_E3_PASSWORD", "test_password")
+        # Patch direct du mot de passe attendu
+        auth_utils.STATIC_PASSWORD = "test_password"
         
         response = client.post(
             "/api/v1/authentification/login",
@@ -25,9 +26,9 @@ class TestAuthEndpoints:
         assert data["token_type"] == "bearer"
         assert isinstance(data["access_token"], str)
 
-    def test_login_invalid_password(self, client, monkeypatch):
+    def test_login_invalid_password(self, client):
         """Test de connexion échouée avec un mot de passe invalide"""
-        monkeypatch.setenv("API_E3_PASSWORD", "correct_password")
+        auth_utils.STATIC_PASSWORD = "correct_password"
         
         response = client.post(
             "/api/v1/authentification/login",

@@ -2,6 +2,7 @@
 Tests d'intégration pour l'API complète
 """
 import pytest
+from src.C9_api.utils import auth as auth_utils
 from fastapi import status
 
 
@@ -15,10 +16,10 @@ class TestAPIIntegration:
         response = client.get("/docs")
         assert response.status_code == status.HTTP_200_OK
 
-    def test_full_workflow_login_and_forecast(self, client, monkeypatch):
+    def test_full_workflow_login_and_forecast(self, client):
         """Test du workflow complet : login puis prévision"""
-        # Configuration du mot de passe pour les tests
-        monkeypatch.setenv("API_E3_PASSWORD", "test_password")
+        # Configuration du mot de passe (patch direct de la variable statique)
+        auth_utils.STATIC_PASSWORD = "test_password"
         
         # Étape 1 : Authentification
         login_response = client.post(
