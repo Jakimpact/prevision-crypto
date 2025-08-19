@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Graphiques - Prévision Crypto{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('app_dashboard') }}" class="nav-link">Tableau de bord</a>
+<a href="{{ url_for('forecast') }}" class="nav-link">Prévisions</a>
+<a href="{{ url_for('charts') }}" class="nav-link">Graphiques</a>
+<a href="{{ url_for('logout') }}" class="nav-link">Se déconnecter</a>
+{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h1 style="color: var(--primary); margin-bottom: 1rem;">
+            Graphiques et Visualisations
+        </h1>
+        <p style="color: var(--text-dark); margin-bottom: 0;">
+            Visualisez l'ensemble des données historiques et prévisions disponibles
+        </p>
+    </div>
+
+    <!-- Contrôles de sélection -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="color: var(--primary); margin-bottom: 1rem;">Configuration</h2>
+        
+        <div class="form-container">
+            <form id="chart-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; align-items: end; max-width: 1000px; margin: 0 auto;">
+                <div class="form-group">
+                    <label for="base-symbol" class="form-label">Devise de base</label>
+                    <select id="base-symbol" name="base" class="form-control">
+                        <option value="BTC" selected>Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quote-symbol" class="form-label">Devise de cotation</label>
+                    <select id="quote-symbol" name="quote" class="form-control">
+                        <option value="USDT" selected>Tether (USDT)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="granularity" class="form-label">Granularité</label>
+                    <select id="granularity" name="granularity" class="form-control">
+                        <option value="hourly" selected>Horaire</option>
+                        <option value="daily">Journalier</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="display-mode" class="form-label">Affichage</label>
+                    <select id="display-mode" name="display_mode" class="form-control">
+                        <option value="both" selected>Historique + Prévisions</option>
+                        <option value="historical">Historique uniquement</option>
+                        <option value="forecast">Prévisions uniquement</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Générer le graphique
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Zone de statut -->
+    <div id="status-area" class="card" style="margin-bottom: 2rem; display: none;">
+        <div id="loading" class="text-center" style="display: none;">
+            <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s ease-in-out infinite; margin-right: 10px;"></div>
+            Chargement des données...
+        </div>
+        
+        <div id="chart-info" style="display: none;">
+            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Informations du graphique</h3>
+            <div id="chart-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Zone du graphique -->
+    <div id="chart-container" class="card" style="display: none; max-width: 1200px; margin: 0 auto 2rem auto; text-align: center;">
+        <h2 style="color: var(--primary); margin-bottom: 1rem;" id="chart-title">Graphique</h2>
+        <div id="price-chart" style="height: 500px; width: 100%;"></div>
+    </div>
+
+    <!-- Zone d'erreur -->
+    <div id="error-area" class="card" style="margin-bottom: 2rem; display: none; background: #fee; border-color: #fcc;">
+        <h3 style="color: #c33; margin-bottom: 0.5rem;">Erreur</h3>
+        <p id="error-message" style="color: #c33; margin: 0;"></p>
+    </div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.stat-item {
+    background: var(--background);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.price-change.positive {
+    color: #22c55e;
+}
+
+.price-change.negative {
+    color: #ef4444;
+}
+
+/* Styles pour améliorer la barre d'outils Plotly */
+.js-plotly-plot .plotly .modebar {
+    position: absolute;
+    top: -45px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.js-plotly-plot .plotly .modebar-btn {
+    color: var(--primary) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn:hover {
+    background: var(--accent) !important;
+    color: white !important;
+}
+
+/* Assurer le centrage du graphique Plotly */
+#price-chart .js-plotly-plot {
+    margin: 0 auto;
+    display: block;
+}
+
+#chart-container .js-plotly-plot .plotly {
+    width: 100% !important;
+}
+</style>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('chart-form');
+    const statusArea = document.getElementById('status-area');
+    const loadingDiv = document.getElementById('loading');
+    const chartInfo = document.getElementById('chart-info');
+    const chartContainer = document.getElementById('chart-container');
+    const errorArea = document.getElementById('error-area');
+    const errorMessage = document.getElementById('error-message');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Reset état
+        hideAll();
+        showStatus();
+        showLoading();
+        
+        // Récupération des paramètres
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        for (let [key, value] of formData.entries()) {
+            params.append(key, value);
+        }
+        
+        try {
+            const response = await fetch(`/api/chart-data?${params.toString()}`);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors de la récupération des données');
+            }
+            
+            hideLoading();
+            displayChart(data);
+            displayChartInfo(data);
+            
+        } catch (error) {
+            hideLoading();
+            showError(error.message);
+        }
+    });
+    
+    function hideAll() {
+        statusArea.style.display = 'none';
+        chartContainer.style.display = 'none';
+        errorArea.style.display = 'none';
+    }
+    
+    function showStatus() {
+        statusArea.style.display = 'block';
+    }
+    
+    function showLoading() {
+        loadingDiv.style.display = 'block';
+        chartInfo.style.display = 'none';
+    }
+    
+    function hideLoading() {
+        loadingDiv.style.display = 'none';
+    }
+    
+    function showError(message) {
+        hideAll();
+        errorArea.style.display = 'block';
+        errorMessage.textContent = message;
+    }
+    
+    function displayChartInfo(data) {
+        const stats = document.getElementById('chart-stats');
+        const tradingPair = data.trading_pair;
+        const priceChange = data.price_change;
+        
+        let statsHTML = `
+            <div class="stat-item">
+                <div class="stat-label">Paire de trading</div>
+                <div class="stat-value">${tradingPair.display_name}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Dernier prix</div>
+                <div class="stat-value">${data.last_price ? Math.round(data.last_price).toLocaleString() : 'N/A'} ${tradingPair.quote_symbol}</div>
+            </div>
+        `;
+        
+        if (priceChange) {
+            const changeClass = priceChange.percent >= 0 ? 'positive' : 'negative';
+            const changeSign = priceChange.percent >= 0 ? '+' : '';
+            statsHTML += `
+                <div class="stat-item">
+                    <div class="stat-label">Variation</div>
+                    <div class="stat-value price-change ${changeClass}">
+                        ${changeSign}${priceChange.percent.toFixed(2)}%
+                        (${changeSign}${priceChange.absolute.toFixed(2)})
+                    </div>
+                </div>
+            `;
+        }
+        
+        stats.innerHTML = statsHTML;
+        chartInfo.style.display = 'block';
+    }
+    
+    function displayChart(data) {
+        const chartTitle = document.getElementById('chart-title');
+        const tradingPair = data.trading_pair;
+        
+        // Récupération du mode d'affichage depuis le formulaire
+        const displayMode = document.getElementById('display-mode').value;
+        
+        // Mise à jour du titre selon le mode d'affichage
+        let titleText = `${tradingPair.display_name}`;
+        switch(displayMode) {
+            case 'historical':
+                titleText += ' - Données Historiques';
+                break;
+            case 'forecast':
+                titleText += ' - Prévisions';
+                break;
+            default:
+                titleText += ' - Historique et Prévisions';
+        }
+        chartTitle.textContent = titleText;
+        
+        // Préparation des données
+        const ohlcvData = data.ohlcv;
+        const forecastData = data.forecasts;
+        
+        const historicalTrace = {
+            x: ohlcvData.map(item => item.date),
+            y: ohlcvData.map(item => item.close),
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Prix historique',
+            line: {
+                color: '#1F6F54',
+                width: 2
+            }
+        };
+        
+        const forecastTrace = {
+            x: forecastData.map(item => item.date),
+            y: forecastData.map(item => item.value),
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Prévisions',
+            line: {
+                color: '#ff7f50',
+                width: 2,
+                dash: 'dash'
+            },
+            marker: {
+                size: 4
+            }
+        };
+        
+        const layout = {
+            xaxis: {
+                title: 'Date',
+                type: 'date'
+            },
+            yaxis: {
+                title: `Prix (${tradingPair.quote_symbol})`,
+                tickformat: ',.0f',
+                separatethousands: true
+            },
+            legend: {
+                x: 0,
+                y: 1
+            },
+            margin: {
+                l: 80,
+                r: 30,
+                t: 30,
+                b: 60
+            },
+            plot_bgcolor: '#F0F4F2',
+            paper_bgcolor: 'white'
+        };
+        
+        // Sélection des traces selon le mode d'affichage
+        let traces = [];
+        switch(displayMode) {
+            case 'historical':
+                traces = [historicalTrace];
+                break;
+            case 'forecast':
+                if (forecastData.length > 0) {
+                    traces = [forecastTrace];
+                } else {
+                    showError('Aucune donnée de prévision disponible');
+                    return;
+                }
+                break;
+            default: // 'both'
+                traces = [historicalTrace];
+                if (forecastData.length > 0) {
+                    traces.push(forecastTrace);
+                }
+        }
+        
+        Plotly.newPlot('price-chart', traces, layout, {
+            responsive: true,
+            displayModeBar: true,
+            modeBarButtonsToRemove: ['lasso2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian'],
+            modeBarButtonsToAdd: [
+                {
+                    name: 'Réinitialiser le zoom',
+                    icon: Plotly.Icons.home,
+                    click: function(gd) {
+                        Plotly.relayout(gd, {
+                            'xaxis.autorange': true,
+                            'yaxis.autorange': true
+                        });
+                    }
+                }
+            ],
+            displaylogo: false,
+            toImageButtonOptions: {
+                format: 'png',
+                filename: `${tradingPair.display_name}_chart`,
+                height: 500,
+                width: 1000,
+                scale: 1
+            }
+        }).then(function() {
+            // Forcer le redimensionnement après création pour assurer le centrage
+            setTimeout(function() {
+                Plotly.Plots.resize('price-chart');
+            }, 100);
+        });
+        
+        chartContainer.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

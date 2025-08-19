@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription - Prévision Crypto{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('index') }}" class="nav-link">Se connecter</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <h1 class="card-title">Créer un compte</h1>
+        
+        <form method="POST" action="{{ url_for('register') }}">
+            <!-- Protection CSRF si utilisé -->
+            {% if csrf_token %}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="username" class="form-label">Nom d'utilisateur</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input"
+                    required
+                    autocomplete="username"
+                    placeholder="nom_utilisateur"
+                    value="{{ request.form.username if request.form.username }}"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input"
+                    required
+                    autocomplete="new-password"
+                    placeholder="••••••••"
+                    minlength="8"
+                >
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full">
+                Créer mon compte
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <p style="color: #666; margin-bottom: 1rem;">Déjà un compte ?</p>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                Se connecter
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles spécifiques à la page d'inscription */
+.form-input:invalid {
+    border-color: var(--error);
+}
+
+.form-input:valid {
+    border-color: var(--success);
+}
+
+/* Animation du bouton d'inscription */
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 59, 44, 0.3);
+}
+
+/* Focus amélioré pour les champs */
+.form-input:focus {
+    transform: scale(1.01);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .card {
+        margin: 0 10px;
+        padding: 1.5rem 1rem;
+    }
+}
+</style>
+{% endblock %}
