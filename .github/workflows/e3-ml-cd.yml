@@ -65,7 +65,14 @@ jobs:
         env:
           PYTHONPATH: ./
         run: |
+          # Start mock E1 API in background
+          python src/C12_tests/mocks/ci_mock_e1_api.py &
+          MOCK_PID=$!
+          # Give server time to start
+          sleep 3
           python update_models_and_forecasts.py --granularity ${{ matrix.granularity }}
+          # Stop mock server
+          kill $MOCK_PID || true
 
       - name: Package models artifact
         uses: actions/upload-artifact@v4
