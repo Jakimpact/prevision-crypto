@@ -1,0 +1,2 @@
+db_path: "data/database/"
+db_filename: "crypto_data.db"

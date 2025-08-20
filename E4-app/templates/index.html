@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion - Prévision Crypto{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('register') }}" class="nav-link">Créer un compte</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <h1 class="card-title">Connexion</h1>
+        
+        <form method="POST" action="{{ url_for('login') }}">
+            <!-- Protection CSRF si utilisé -->
+            {% if csrf_token %}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="username" class="form-label">Nom d'utilisateur</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input"
+                    required
+                    autocomplete="username"
+                    placeholder="nom_utilisateur"
+                    value="{{ request.form.username if request.form.username }}"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input"
+                    required
+                    autocomplete="current-password"
+                    placeholder="••••••••"
+                    minlength="8"
+                >
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input 
+                        type="checkbox" 
+                        name="remember_me"
+                        style="margin: 0;"
+                        {{ 'checked' if request.form.remember_me }}
+                    >
+                    <span style="font-size: 0.9rem;">Se souvenir de moi</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full">
+                Se connecter
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <p style="color: #666; margin-bottom: 1rem;">Pas encore de compte ?</p>
+            <a href="{{ url_for('register') }}" class="btn btn-secondary">
+                Créer un compte
+            </a>
+        </div>
+
+    </div>
+    
+    <!-- Informations additionnelles -->
+    <div style="margin-top: 2rem; text-align: center;">
+        <div style="background: rgba(14, 59, 44, 0.05); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+            <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem;">
+                Fonctionnalités disponibles
+            </h3>
+            <ul style="list-style: none; color: var(--text-dark); font-size: 0.9rem; line-height: 1.8;">
+                <li>Données en temps réel (Bitcoin, Ethereum)</li>
+                <li>Prévisions IA (horaire et journalière)</li>
+                <li>Graphiques interactifs avancés</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Disclaimer légal -->
+    <div style="margin-top: 1rem; text-align: center;">
+        <p style="font-size: 0.8rem; color: #888; line-height: 1.4;">
+            ⚠️ <strong>Avertissement :</strong> Les prévisions générées par cette application 
+            sont basées sur des modèles d'intelligence artificielle et ne constituent en aucun cas 
+            des conseils financiers. Les investissements en cryptomonnaies sont risqués.
+        </p>
+    </div>
+</div>
+
+<style>
+/* Styles spécifiques à la page de connexion */
+.form-input:invalid {
+    border-color: var(--error);
+}
+
+.form-input:valid {
+    border-color: var(--success);
+}
+
+/* Animation du bouton de connexion */
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 59, 44, 0.3);
+}
+
+/* Focus amélioré pour les champs */
+.form-input:focus {
+    transform: scale(1.01);
+}
+
+/* Amélioration visuelle de la checkbox */
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+
+/* Responsive amélioré */
+@media (max-width: 480px) {
+    .card {
+        margin: 0 10px;
+        padding: 1.5rem 1rem;
+    }
+}
+</style>
+{% endblock %}
