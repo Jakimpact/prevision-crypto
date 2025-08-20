@@ -1,4 +1,4 @@
-name: E3 ML Continuous Delivery
+name: E3 ML Continuous Delivery (Tests Only)
 
 on:
   push:
@@ -8,17 +8,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-train-package:
+  tests:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: E3-ml
-    strategy:
-      fail-fast: false
-      matrix:
-        granularity: [hour, day]
-    permissions:
-      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,67 +35,22 @@ jobs:
           pip install -r requirements.txt
           pip install pytest-cov
 
-      - name: Run tests (all)
+      - name: Run tests
         env:
           PYTHONPATH: ./src
         run: |
           pytest -q --maxfail=1 --disable-warnings
 
-      - name: Coverage (artifact)
+      - name: Generate coverage
         if: always()
         env:
           PYTHONPATH: ./src
         run: |
           pytest --cov=src --cov-report=xml:coverage.xml || true
 
-      - name: Upload coverage
+      - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e3-ml-coverage-${{ matrix.granularity }}
+          name: e3-ml-coverage
           path: E3-ml/coverage.xml
-
-      - name: Train & generate forecasts (granularity ${{ matrix.granularity }})
-        env:
-          PYTHONPATH: ./:./src/C12_tests/mocks
-        run: |
-          # Start mock E1 API in background
-          python src/C12_tests/mocks/ci_mock_e1_api.py &
-          MOCK_PID=$!
-          # Give server time to start
-          sleep 3
-          # Preload monkeypatches (generate_test_periods simplification)
-          python -c "import src.C12_tests.mocks.preload_monkeypatches"
-          # Create shim mlflow package pointing to mock (if real mlflow import would trigger network)
-          mkdir -p mlflow
-          echo "from mock_mlflow import *" > mlflow/__init__.py
-          python src/C12_tests/mocks/run_pipeline_with_mocks.py --granularity ${{ matrix.granularity }}
-          # Stop mock server
-          kill $MOCK_PID || true
-
-      - name: Package models artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: models-${{ matrix.granularity }}
-          path: |
-            E3-ml/models/${{ matrix.granularity == 'hour' && 'hour_models' || 'day_models' }}/
-
-  aggregate-release:
-    needs: test-train-package
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create Models Release PR
-        uses: peter-evans/create-pull-request@v6
-        with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            title: 'ML Release: Sync dev -> main (models updated)'
-            body: 'Automated ML release after successful training and packaging.'
-            base: main
-            branch: release/e3-ml-dev-to-main
-            commit-message: 'chore(ml-release): sync models dev to main'
-            delete-branch: true
-            labels: ml,release,automation
