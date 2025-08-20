@@ -66,7 +66,6 @@ Accéder aux points d'entrée de chaque couche :
 
 ## 🛡️ Sécurité (principes de base)
 - Isolation des secrets (.env), pas de commit de clés.
-- Validation simple des entrées (à renforcer).
 
 ## 📝 Licence
 Voir le fichier `LICENSE` à la racine.
