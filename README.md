@@ -52,22 +52,22 @@ Accéder aux points d'entrée de chaque couche :
 8. Lancer pipeline ML pour initialisation des modèles : `python E3-ml/update_models_and_forecasts.py` (lancer l'API E1 auparavant).
 7. Lancer l'app : `python E4-app/app.py` (lancer les API E1 et E3 pour accès aux fonctionnalités).
 
-## 🗺️ Schéma conceptuel (résumé textuel)
+## Schéma conceptuel (résumé textuel)
 ```
 [Sources externes] -> [E1-data Ingestion] -> [Base locale / vues] -> [E3-ml Features] -> [Modèles & Prévisions] -> [E4-app Services & UI]
 									^                                      |
 									|-----------[E2-veille Signaux]---------|
 ```
 
-## ♿ Accessibilité documentaire
+## Accessibilité documentaire
 - Usage de titres hiérarchiques, langage clair, liens explicites.
 - Pas de dépendance exclusive à la couleur pour transmettre une information.
 - Diagrammes fournis avec description textuelle lorsqu'employés.
 
-## 🛡️ Sécurité (principes de base)
+## 🛡Sécurité (principes de base)
 - Isolation des secrets (.env), pas de commit de clés.
 
-## 📝 Licence
+## Licence
 Voir le fichier `LICENSE` à la racine.
 
 ## Révision
