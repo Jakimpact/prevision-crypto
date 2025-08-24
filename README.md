@@ -64,7 +64,7 @@ Accéder aux points d'entrée de chaque couche :
 - Pas de dépendance exclusive à la couleur pour transmettre une information.
 - Diagrammes fournis avec description textuelle lorsqu'employés.
 
-## 🛡Sécurité (principes de base)
+## Sécurité (principes de base)
 - Isolation des secrets (.env), pas de commit de clés.
 
 ## Licence
