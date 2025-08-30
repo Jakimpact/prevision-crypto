@@ -1,30 +1,33 @@
-E1_api_urls:
-  E1_api_login_url: "http://localhost:8000/api/v1/authentification/login"
-  ohlcv_urls:
-    minute: "http://localhost:8000/api/v1/ohlcv/minute_by_trading_pair_id"
-    hourly: "http://localhost:8000/api/v1/ohlcv/hourly_by_trading_pair_id"
-    daily: "http://localhost:8000/api/v1/ohlcv/daily_by_trading_pair_id"
-  get_all_forecast_urls:
-    minute: "http://localhost:8000/api/v1/forecast/minute_by_trading_pair_id"
-    hourly: "http://localhost:8000/api/v1/forecast/hourly_by_trading_pair_id"
-    daily: "http://localhost:8000/api/v1/forecast/daily_by_trading_pair_id"
-  get_last_forecast_urls:
-    minute: "http://localhost:8000/api/v1/forecast/last_minute_by_trading_pair_id"
-    hourly: "http://localhost:8000/api/v1/forecast/last_hourly_by_trading_pair_id"
-    daily: "http://localhost:8000/api/v1/forecast/last_daily_by_trading_pair_id"
-  post_forecast_urls:
-    minute: "http://localhost:8000/api/v1/forecast/minute"
-    hourly: "http://localhost:8000/api/v1/forecast/hourly"
-    daily: "http://localhost:8000/api/v1/forecast/daily"
+E1_api_endpoints:
+  login: "/api/v1/authentification/login"
+  ohlcv:
+    minute: "/api/v1/ohlcv/minute_by_trading_pair_id"
+    hourly: "/api/v1/ohlcv/hourly_by_trading_pair_id"
+    daily: "/api/v1/ohlcv/daily_by_trading_pair_id"
+  get_all_forecast:
+    minute: "/api/v1/forecast/minute_by_trading_pair_id"
+    hourly: "/api/v1/forecast/hourly_by_trading_pair_id"
+    daily: "/api/v1/forecast/daily_by_trading_pair_id"
+  get_last_forecast:
+    minute: "/api/v1/forecast/last_minute_by_trading_pair_id"
+    hourly: "/api/v1/forecast/last_hourly_by_trading_pair_id"
+    daily: "/api/v1/forecast/last_daily_by_trading_pair_id"
+  post_forecast:
+    minute: "/api/v1/forecast/minute"
+    hourly: "/api/v1/forecast/hourly"
+    daily: "/api/v1/forecast/daily"
 
-E3_api_urls:
-  E3_api_login_url: "http://localhost:8005/api/v1/authentification/login"
-  post_forecast_urls:
-    hourly: "http://localhost:8005/api/v1/forecast/forecast_hourly"
-    daily: "http://localhost:8005/api/v1/forecast/forecast_daily"
+E3_api_endpoints:
+  login: "/api/v1/authentification/login"
+  post_forecast:
+    hourly: "/api/v1/forecast/forecast_hourly"
+    daily: "/api/v1/forecast/forecast_daily"
+
+models_dir_path: "models"
+
+###### Pour le script d'expérimentation #######
 
 raw_data_dir_path: "data/raw_data"
-models_dir_path: "models"
 
 trading_pairs:
   - id: 991
