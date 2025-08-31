@@ -33,8 +33,8 @@ except FileNotFoundError as e:
 
 # --- Construction dynamique des URLs ---
 # Lit les URLs de base depuis les variables d'environnement, avec un fallback pour le dev local.
-E1_API_BASE_URL = os.getenv("DATA_API_URL", "http://localhost:8001")
-E3_API_BASE_URL = os.getenv("ML_API_URL", "http://localhost:8002")
+E1_API_BASE_URL = os.getenv("API_E1_BASE_URL", "http://localhost:8001")
+E3_API_BASE_URL = os.getenv("API_E3_BASE_URL", "http://localhost:8002")
 
 class DataSettings():
     # Les URLs sont maintenant construites en combinant la base et l'endpoint
