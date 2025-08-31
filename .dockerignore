@@ -1,0 +1,50 @@
+# Fichiers de gestion de version
+.git
+.gitignore
+
+# Fichiers et dossiers de l'environnement de développement
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers de configuration Docker et de la roadmap
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Fichiers d'environnement
+.env
+.env.*
+!.env.example
+
+# Artefacts Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/venv/
+**/pip-selfcheck.json
+
+# Bases de données locales et fichiers SQLite
+*.sqlite3
+*.db
+*.db-journal
+
+# Dossiers de logs (dans tous les sous-projets)
+**/logs/
+
+# Dossiers de données et modèles gérés par des volumes
+E1-data/data/
+E3-ml/models/
+E3-ml/mlruns/
+E4-app/monitoring/
+
+# Fichiers de test et de rapport
+.pytest_cache/
+coverage.xml
+htmlcov/
+pytest.ini
+
+# Fichiers système macOS
+.DS_Store
