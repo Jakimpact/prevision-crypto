@@ -18,8 +18,8 @@ class Config:
     # URLs des APIs
     URL_E1 = os.getenv("API_E1_BASE_URL")
     URL_E3 = os.getenv("API_E3_BASE_URL")
-    E3_API_USERNAME = os.getenv("E3_API_USERNAME")
-    E3_API_PASSWORD = os.getenv("E3_API_PASSWORD")
+    E3_API_USERNAME = os.getenv("API_E3_USERNAME")
+    E3_API_PASSWORD = os.getenv("API_E3_PASSWORD")
 
     ENDPOINTS_E1 = {
         "login": f"{URL_E1}/api/v1/authentification/login",
