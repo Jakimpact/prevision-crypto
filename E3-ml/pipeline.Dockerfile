@@ -7,7 +7,11 @@ RUN apt-get update && apt-get install -y cron
 # Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les dépendances et les installer
+# Créer un environnement virtuel et l'ajouter au PATH
+RUN python3 -m venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copier les dépendances et les installer dans le venv
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
