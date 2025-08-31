@@ -48,7 +48,8 @@ class DataSettings():
     E3_api_post_forecast_urls = {k: f"{E3_API_BASE_URL}{v}" for k, v in DATA_CONFIG['E3_api_endpoints']['post_forecast'].items()}
 
     raw_data_dir_path = DATA_CONFIG["raw_data_dir_path"]
-    models_dir_path = DATA_CONFIG["models_dir_path"]
+
+    models_dir_path = os.getenv("MODELS_DIR_PATH", "models")
 
     trading_pairs = DATA_CONFIG["trading_pairs"]
 

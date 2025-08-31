@@ -23,8 +23,6 @@ E3_api_endpoints:
     hourly: "/api/v1/forecast/forecast_hourly"
     daily: "/api/v1/forecast/forecast_daily"
 
-models_dir_path: "models"
-
 ###### Pour le script d'expérimentation #######
 
 raw_data_dir_path: "data/raw_data"
