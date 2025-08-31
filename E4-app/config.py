@@ -5,19 +5,19 @@ from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).parent
-load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"))
+load_dotenv()
 
 
 class Config:
     """Configuration de base pour l'application Flask"""
     
     # Configuration Flask
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-    PERMANENT_SESSION_LIFETIME = timedelta(seconds=int(os.getenv('SESSION_LIFETIME', '86400')))
+    SECRET_KEY = os.getenv('FLASK_APP_SECRET_KEY', 'dev-secret-key-change-in-production')
+    PERMANENT_SESSION_LIFETIME = timedelta(seconds=int(os.getenv('FLASK_APP_SESSION_LIFETIME', '86400')))
     
     # URLs des APIs
-    URL_E1 = os.getenv("URL_E1")
-    URL_E3 = os.getenv("URL_E3")
+    URL_E1 = os.getenv("API_E1_BASE_URL")
+    URL_E3 = os.getenv("API_E3_BASE_URL")
     E3_API_USERNAME = os.getenv("E3_API_USERNAME")
     E3_API_PASSWORD = os.getenv("E3_API_PASSWORD")
 
@@ -52,6 +52,12 @@ class Config:
     # Fichier de configuration du monitoring
     MONITORING_FILE_PATH = os.path.join(BASE_DIR, 'monitoring', 'config.cfg')
 
+    # Configuration du monitoring via variables d'environnement
+    MONITORING_DB_URI = os.getenv('MONITORING_DB_URI', f"sqlite:///{os.path.join(BASE_DIR, 'monitoring', 'dashboard.db')}")
+    MONITORING_USERNAME = os.getenv('FLASK_MONITORING_USERNAME')
+    MONITORING_PASSWORD = os.getenv('FLASK_MONITORING_PASSWORD')
+    MONITORING_SECURITY_TOKEN = os.getenv('FLASK_MONITORING_SECURITY_TOKEN')
+
     # Seuils d'alerte (latence uniquement)
     THRESHOLDS = {
         "latency": {
@@ -70,7 +76,7 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Configuration pour l'environnement de production"""
     DEBUG = False
-    SECRET_KEY = os.getenv('SECRET_KEY')  # Obligatoire en production
+    SECRET_KEY = os.getenv('FLASK_APP_SECRET_KEY')  # Obligatoire en production
     LOG_LEVEL = 'WARNING'
     
     @classmethod

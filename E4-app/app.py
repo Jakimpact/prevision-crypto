@@ -26,7 +26,15 @@ DISABLE_MONITORING = os.getenv('DISABLE_MONITORING', '0') == '1'
 # Initialisation du dashboard de monitoring (protégé pour compatibilité CI / versions Flask)
 if not DISABLE_MONITORING and dashboard:
     try:
+        # 1. Charger la configuration de base depuis le fichier
         dashboard.config.init_from(file=Config.MONITORING_FILE_PATH)
+
+        # 2. Surcharger la configuration sensible depuis les variables d'environnement
+        dashboard.config.database_name = Config.MONITORING_DB_URI
+        dashboard.config.username = Config.MONITORING_USERNAME
+        dashboard.config.password = Config.MONITORING_PASSWORD
+        dashboard.config.security_token = Config.MONITORING_SECURITY_TOKEN
+
     except Exception as e:  # pragma: no cover
         log_warning(f"Impossible d'initialiser le monitoring dashboard: {e}", include_user=False)
 else:
