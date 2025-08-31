@@ -48,15 +48,14 @@ class Config:
     LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', '10485760'))  # 10MB
     LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '5'))
     LOG_FORMAT = '[%(asctime)s] %(levelname)s - %(message)s'
-    
-    # Fichier de configuration du monitoring
-    MONITORING_FILE_PATH = os.path.join(BASE_DIR, 'monitoring', 'config.cfg')
 
     # Configuration du monitoring via variables d'environnement
     MONITORING_DB_URI = os.getenv('MONITORING_DB_URI', f"sqlite:///{os.path.join(BASE_DIR, 'monitoring', 'dashboard.db')}")
     MONITORING_USERNAME = os.getenv('FLASK_MONITORING_USERNAME')
     MONITORING_PASSWORD = os.getenv('FLASK_MONITORING_PASSWORD')
     MONITORING_SECURITY_TOKEN = os.getenv('FLASK_MONITORING_SECURITY_TOKEN')
+    MONITORING_CUSTOM_LINK = os.getenv('FLASK_MONITORING_CUSTOM_LINK', '/admin/dashboard')
+    MONITORING_TIMEZONE = os.getenv('FLASK_MONITORING_TIMEZONE', 'Europe/Amsterdam')
 
     # Seuils d'alerte (latence uniquement)
     THRESHOLDS = {
