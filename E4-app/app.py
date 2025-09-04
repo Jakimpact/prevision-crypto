@@ -1,5 +1,6 @@
 import time
 import os
+import pytz
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 try:
     import flask_monitoringdashboard as dashboard  # type: ignore
@@ -23,10 +24,17 @@ app.config.from_object(Config)
 
 DISABLE_MONITORING = os.getenv('DISABLE_MONITORING', '0') == '1'
 
-# Initialisation du dashboard de monitoring (protégé pour compatibilité CI / versions Flask)
+# Initialisation et configuration du dashboard de monitoring
 if not DISABLE_MONITORING and dashboard:
     try:
-        dashboard.config.init_from(file=Config.MONITORING_FILE_PATH)
+        # 1. Appliquer la configuration depuis les variables d'environnement
+        dashboard.config.database_name = Config.MONITORING_DB_URI
+        dashboard.config.username = Config.MONITORING_USERNAME
+        dashboard.config.password = Config.MONITORING_PASSWORD
+        dashboard.config.security_token = Config.MONITORING_SECURITY_TOKEN
+        dashboard.config.link = Config.MONITORING_CUSTOM_LINK
+        dashboard.config.timezone = pytz.timezone(Config.MONITORING_TIMEZONE)
+
     except Exception as e:  # pragma: no cover
         log_warning(f"Impossible d'initialiser le monitoring dashboard: {e}", include_user=False)
 else:
@@ -367,11 +375,11 @@ def internal_error(error):
 
 # =================== LANCEMENT ===================
 
+# Initialisation et configuration du dashboard de monitoring
 if not DISABLE_MONITORING and dashboard:
-    try:
         dashboard.bind(app)
-    except Exception as e:  # pragma: no cover
-        log_warning(f"Monitoring dashboard non lié (erreur: {e})", include_user=False)
+        log_info("Monitoring dashboard initialisé et configuré.", include_user=False)
+
 
 if __name__ == '__main__':
     # Affichage des informations de démarrage

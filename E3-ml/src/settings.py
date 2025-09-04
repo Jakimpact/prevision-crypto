@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("E3-ml")
 
 BASE_DIR = Path(__file__).parent.parent
-load_dotenv(dotenv_path=os.path.join(BASE_DIR, "config/.env"))
+load_dotenv()
 
 
 def load_yaml_config(filename):
@@ -31,18 +31,25 @@ except FileNotFoundError as e:
     print(f"Warning: {e}")
 
 
-class DataSettings():
-    E1_api_login_url = DATA_CONFIG["E1_api_urls"]["E1_api_login_url"]
-    E1_api_ohlcv_urls = DATA_CONFIG["E1_api_urls"]["ohlcv_urls"]
-    E1_api_get_all_forecast_urls = DATA_CONFIG["E1_api_urls"]["get_all_forecast_urls"]
-    E1_api_get_last_forecast_urls = DATA_CONFIG["E1_api_urls"]["get_last_forecast_urls"]
-    E1_api_post_forecast_urls = DATA_CONFIG["E1_api_urls"]["post_forecast_urls"]
+# --- Construction dynamique des URLs ---
+# Lit les URLs de base depuis les variables d'environnement, avec un fallback pour le dev local.
+E1_API_BASE_URL = os.getenv("API_E1_BASE_URL", "http://localhost:8001")
+E3_API_BASE_URL = os.getenv("API_E3_BASE_URL", "http://localhost:8002")
 
-    E3_api_login_url = DATA_CONFIG["E3_api_urls"]["E3_api_login_url"]
-    E3_api_post_forecast_urls = DATA_CONFIG["E3_api_urls"]["post_forecast_urls"]
+class DataSettings():
+    # Les URLs sont maintenant construites en combinant la base et l'endpoint
+    E1_api_login_url = f"{E1_API_BASE_URL}{DATA_CONFIG['E1_api_endpoints']['login']}"
+    E1_api_ohlcv_urls = {k: f"{E1_API_BASE_URL}{v}" for k, v in DATA_CONFIG['E1_api_endpoints']['ohlcv'].items()}
+    E1_api_get_all_forecast_urls = {k: f"{E1_API_BASE_URL}{v}" for k, v in DATA_CONFIG['E1_api_endpoints']['get_all_forecast'].items()}
+    E1_api_get_last_forecast_urls = {k: f"{E1_API_BASE_URL}{v}" for k, v in DATA_CONFIG['E1_api_endpoints']['get_last_forecast'].items()}
+    E1_api_post_forecast_urls = {k: f"{E1_API_BASE_URL}{v}" for k, v in DATA_CONFIG['E1_api_endpoints']['post_forecast'].items()}
+
+    E3_api_login_url = f"{E3_API_BASE_URL}{DATA_CONFIG['E3_api_endpoints']['login']}"
+    E3_api_post_forecast_urls = {k: f"{E3_API_BASE_URL}{v}" for k, v in DATA_CONFIG['E3_api_endpoints']['post_forecast'].items()}
 
     raw_data_dir_path = DATA_CONFIG["raw_data_dir_path"]
-    models_dir_path = DATA_CONFIG["models_dir_path"]
+
+    models_dir_path = os.getenv("MODELS_DIR_PATH", "models")
 
     trading_pairs = DATA_CONFIG["trading_pairs"]
 
@@ -53,7 +60,8 @@ class MLSettings():
     dates_by_granularity = ML_CONFIG["dates_by_granularity"]
     models_config = ML_CONFIG["models_config"]
 
-    ml_flow_tracking_uri = ML_CONFIG["mlflow_tracking_uri"]
+    # L'URI de MLflow est maintenant entièrement contrôlée par la variable d'environnement
+    ml_flow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 
 
 class HourModelsSettings():
@@ -65,9 +73,9 @@ class DayModelsSettings():
     
 
 class SecretSettings():
-    API_USERNAME = os.getenv("API_USERNAME")
-    API_PASSWORD = os.getenv("API_PASSWORD")
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    API_USERNAME = os.getenv("API_E1_SCRIPT_USERNAME")
+    API_PASSWORD = os.getenv("API_E1_SCRIPT_PASSWORD")
+    SECRET_KEY = os.getenv("API_E3_SECRET_KEY")
     API_E3_ALGORITHM = os.getenv("API_E3_ALGORITHM")
     API_E3_USERNAME = os.getenv("API_E3_USERNAME")
     API_E3_PASSWORD = os.getenv("API_E3_PASSWORD")

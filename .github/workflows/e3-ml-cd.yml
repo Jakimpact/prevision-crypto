@@ -38,6 +38,15 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: ./src
+          API_E1_SCRIPT_USERNAME: "testuser"
+          API_E1_SCRIPT_PASSWORD: "testpassword"
+          API_E1_BASE_URL: "http://mock-e1-api:8001"
+          API_E3_SECRET_KEY: "your-super-secret-key-for-tests"
+          API_E3_ALGORITHM: "HS256"
+          API_E3_USERNAME: "testuser"
+          API_E3_PASSWORD: "testpassword"
+          API_E3_BASE_URL: "http://mock-e3-api:8002"
+          MLFLOW_TRACKING_URI: "http://mock-mlflow:5000"
         run: |
           pytest -q --maxfail=1 --disable-warnings
 

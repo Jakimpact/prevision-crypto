@@ -1,3 +1,14 @@
+models_config:
+  linear_regression:
+      darts_module: "darts.models.forecasting.linear_regression_model"
+      darts_class: "LinearRegressionModel"
+  xgboost:
+      darts_module: "darts.models.forecasting.xgboost"
+      darts_class: "XGBModel"
+
+
+###### Pour le script d'expérimentation #######
+
 # Liste des paires de trading à prévoir avec leurs granularités de données (daily, hourly, minute)
 trading_pairs:
   - id: 991
@@ -37,13 +48,3 @@ dates_by_granularity:
     test_start: "2023-01-02"
     test_end: "2023-12-31"
     forecasting_start: "2024-01-01"
-
-models_config:
-  linear_regression:
-      darts_module: "darts.models.forecasting.linear_regression_model"
-      darts_class: "LinearRegressionModel"
-  xgboost:
-      darts_module: "darts.models.forecasting.xgboost"
-      darts_class: "XGBModel"
-
-mlflow_tracking_uri: "http://localhost:5000"

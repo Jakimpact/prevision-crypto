@@ -1,0 +1,159 @@
+version: "3.8"
+
+services:
+  # ==================================================================
+  # == COUCHE E1-DATA: Scripts d'arrière-plan et API de données
+  # ==================================================================
+  data-scripts:
+    build:
+      context: ./E1-data
+      dockerfile: scripts.Dockerfile
+    container_name: data-scripts
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - CMC_API_KEY=${CMC_API_KEY}
+      - API_E1_SCRIPT_USERNAME=${API_E1_SCRIPT_USERNAME}
+      - API_E1_SCRIPT_PASSWORD=${API_E1_SCRIPT_PASSWORD}
+      - API_E1_SCRIPT_ROLE=${API_E1_SCRIPT_ROLE}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - e1_logs:/app/data/logs
+      - ./E1-data/config:/app/config:ro
+    restart: always
+
+  data-api:
+    build:
+      context: ./E1-data
+      dockerfile: api.Dockerfile
+    container_name: data-api
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - API_E1_SECRET_KEY=${API_E1_SECRET_KEY}
+      - API_E1_ALGORITHM=${API_E1_ALGORITHM}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./E1-data/config:/app/config:ro
+    restart: always
+
+  # ==================================================================
+  # == COUCHE E3-ML: Pipeline, API, MLflow et App de démo
+  # ==================================================================
+  ml-pipeline:
+    build:
+      context: ./E3-ml
+      dockerfile: pipeline.Dockerfile
+    container_name: ml-pipeline
+    depends_on:
+      - data-api
+      - mlflow-server
+    environment:
+      - API_E1_BASE_URL=http://data-api:8001
+      - API_E1_SCRIPT_USERNAME=${API_E1_SCRIPT_USERNAME}
+      - API_E1_SCRIPT_PASSWORD=${API_E1_SCRIPT_PASSWORD}
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MODELS_DIR_PATH=/app/models
+    volumes:
+      - ml_models:/app/models
+      - mlruns:/app/mlruns
+      - ./E3-ml/config:/app/config:ro
+    restart: always
+
+  mlflow-server:
+    build:
+      context: ./E3-ml
+      dockerfile: mlflow.Dockerfile
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlruns:/app/mlruns
+    restart: always
+
+  ml-api:
+    build:
+      context: ./E3-ml
+      dockerfile: api.Dockerfile
+    container_name: ml-api
+    environment:
+      - API_E3_SECRET_KEY=${API_E3_SECRET_KEY}
+      - API_E3_ALGORITHM=${API_E3_ALGORITHM}
+      - API_E3_USERNAME=${API_E3_USERNAME}
+      - API_E3_PASSWORD=${API_E3_PASSWORD}
+      - MODELS_DIR_PATH=/app/models
+    ports:
+      - "8002:8002"
+    volumes:
+      - ml_models:/app/models:ro
+      - ./E3-ml/config:/app/config:ro
+    restart: always
+
+  ml-app:
+    build:
+      context: ./E3-ml
+      dockerfile: app.Dockerfile
+    container_name: ml-app
+    depends_on:
+      - ml-api
+    environment:
+      - API_E3_BASE_URL=http://ml-api:8002
+      - API_E3_USERNAME=${API_E3_USERNAME}
+      - API_E3_PASSWORD=${API_E3_PASSWORD}
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./E3-ml/config:/app/config:ro
+    restart: always
+
+  # ==================================================================
+  # == COUCHE E4-APP: Application web principale (Flask)
+  # ==================================================================
+  webapp:
+    build:
+      context: ./E4-app
+      dockerfile: app.Dockerfile
+    container_name: webapp
+    depends_on:
+      - data-api
+      - ml-api
+    environment:
+      - API_E1_BASE_URL=http://data-api:8001
+      - API_E3_BASE_URL=http://ml-api:8002
+      - API_E3_USERNAME=${API_E3_USERNAME}
+      - API_E3_PASSWORD=${API_E3_PASSWORD}
+      - FLASK_APP_SECRET_KEY=${FLASK_APP_SECRET_KEY}
+      - FLASK_APP_SESSION_LIFETIME=${FLASK_APP_SESSION_LIFETIME}
+      - MONITORING_DB_URI=sqlite:////app/monitoring/dashboard.db # Chemin interne au conteneur
+      - FLASK_MONITORING_USERNAME=${FLASK_MONITORING_USERNAME}
+      - FLASK_MONITORING_PASSWORD=${FLASK_MONITORING_PASSWORD}
+      - FLASK_MONITORING_SECURITY_TOKEN=${FLASK_MONITORING_SECURITY_TOKEN}
+      - FLASK_MONITORING_CUSTOM_LINK=${FLASK_MONITORING_CUSTOM_LINK}
+      - FLASK_MONITORING_TIMEZONE=${FLASK_MONITORING_TIMEZONE}
+    ports:
+      - "8080:8080"
+    volumes:
+      - e4_logs:/app/logs
+      - e4_monitoring:/app/monitoring
+    restart: always
+
+# ==================================================================
+# == VOLUMES: Définition des volumes persistants
+# ==================================================================
+volumes:
+  e1_logs:
+  ml_models:
+  mlruns:
+  e4_logs:
+  e4_monitoring:
+

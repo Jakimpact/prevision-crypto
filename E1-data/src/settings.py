@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("E1-data")
 
 BASE_DIR = Path(__file__).parent.parent
-load_dotenv(dotenv_path=os.path.join(BASE_DIR, "config/.env"))
+# # Chargement des variables d'environnements depuis un fichier .env, utilisé pour le dev local.
+load_dotenv()
 
 
 def load_yaml_config(filename):
@@ -24,15 +25,9 @@ def load_yaml_config(filename):
 
 try:
     EXTRACT_CONFIG = load_yaml_config("extract_config.yaml")
-    DATABASE_CONFIG = load_yaml_config("database_config.yaml")
     UPDATE_CONFIG = load_yaml_config("update_config.yaml")
 except FileNotFoundError as e: 
     print(f"Warning: {e}")
-
-
-class DatabaseSettings():
-    DB_PATH = DATABASE_CONFIG["db_path"]
-    DB_FILENAME = DATABASE_CONFIG["db_filename"]
 
 
 class ExtractSettings():
@@ -45,11 +40,11 @@ class ExtractSettings():
 
 class SecretSettings():
     CMC_API_KEY = os.getenv("CMC_API_KEY")
-    API_SECRET_KEY = os.getenv("API_SECRET_KEY")
-    API_ALGORITHM = os.getenv("API_ALGORITHM")
-    API_USERNAME = os.getenv("API_USERNAME")
-    API_PASSWORD = os.getenv("API_PASSWORD")
-    API_ROLE = os.getenv("API_ROLE")
+    API_SECRET_KEY = os.getenv("API_E1_SECRET_KEY")
+    API_ALGORITHM = os.getenv("API_E1_ALGORITHM")
+    API_USERNAME = os.getenv("API_E1_SCRIPT_USERNAME")
+    API_PASSWORD = os.getenv("API_E1_SCRIPT_PASSWORD")
+    API_ROLE = os.getenv("API_E1_SCRIPT_ROLE")
     DB_USERNAME = os.getenv("DB_USERNAME")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_HOST = os.getenv("DB_HOST")
